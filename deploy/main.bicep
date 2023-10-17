@@ -1,10 +1,9 @@
-param parLocation string = 'southuk'
-
+param parLocation string = resourceGroup().location
 
 module hub 'modules/hub.bicep' = {
   name: 'hub'
   params: {
-    parVnetName: 'vnet-hub-location-001'
+    parVnetName: 'vnet-hub-${parLocation}-001'
     parLocation: parLocation
     parVnetPrefix: '10.10.0.0/16'
 
@@ -25,7 +24,7 @@ module hub 'modules/hub.bicep' = {
 module core 'modules/core.bicep' = {
   name: 'core'
   params: {
-    parVnetName: 'vnet-core-location-001'
+    parVnetName: 'vnet-core-${parLocation}-001'
     parLocation: parLocation
     parVnetPrefix: '10.20.0.0/16'
 
@@ -40,7 +39,7 @@ module core 'modules/core.bicep' = {
 module spokeDev 'modules/spoke.bicep' = {
   name: 'spokeDev'
   params: {
-    parVnetName: 'vnet-dev-location-001'
+    parVnetName: 'vnet-dev-${parLocation}-001'
     parLocation: parLocation
     parVnetPrefix: '10.30.0.0/16'
 
@@ -58,7 +57,7 @@ module spokeDev 'modules/spoke.bicep' = {
 module spokeProd 'modules/spoke.bicep' = {
   name: 'spokeProd'
   params: {
-    parVnetName: 'vnet-prod-location-001'
+    parVnetName: 'vnet-prod-${parLocation}-001'
     parLocation: parLocation
     parVnetPrefix: '10.31.0.0/16'
 
