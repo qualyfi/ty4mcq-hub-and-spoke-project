@@ -71,3 +71,13 @@ module modSpokeProd 'modules/spoke.bicep' = {
     parSubnet3Prefix: '10.31.3.0/24'
   }
 }
+
+module modPeer 'modules/peer.bicep' = {
+  name: 'peer'
+  params: {
+    parHubVnetName: modHub.outputs.outVnetName
+    parCoreVnetName: modCore.outputs.outVnetName
+    parSpokeDevVnetName: modSpokeDev.outputs.outVnetName
+    parSpokeProdVnetName: modSpokeProd.outputs.outVnetName
+  }
+}
