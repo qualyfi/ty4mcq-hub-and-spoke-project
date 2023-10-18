@@ -61,6 +61,9 @@ output outVnetName string = resVnet.name
 resource resBasPublicIP 'Microsoft.Network/publicIPAddresses@2023-05-01' = {
   name: parBasPublicIPName
   location: parLocation
+  sku: {
+    name: 'Standard'
+  }
   properties: {
     publicIPAllocationMethod: 'Static'
   }
