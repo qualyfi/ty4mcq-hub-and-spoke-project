@@ -37,9 +37,12 @@ module modCore 'modules/core.bicep' = {
     parPrivateIPAllocationMethod: 'static'
     parPrivateIPAddress: '10.20.1.20'
 
-    parVmName: 'vm1core001'
+    parDefaultNsgName: modDefaultNsg.outputs.outDefaultNsgName
+
+    parVmName: 'vm-core-${parLocation}-001'
     parVmSize: 'Standard_D2S_v3'
     
+    parComputerName: 'vm1core001'
     parAdminUsername: 'ty4mcq'
     parAdminPassword: 'QualyfiProject123!'
     
@@ -67,6 +70,8 @@ module modSpokeDev 'modules/spoke.bicep' = {
 
     parSubnet3Name: 'StSubnet'
     parSubnet3Prefix: '10.30.3.0/24'
+
+    parDefaultNsgName: modDefaultNsg.outputs.outDefaultNsgName
   }
 }
 
@@ -85,6 +90,8 @@ module modSpokeProd 'modules/spoke.bicep' = {
 
     parSubnet3Name: 'StSubnet'
     parSubnet3Prefix: '10.31.3.0/24'
+
+    parDefaultNsgName: modDefaultNsg.outputs.outDefaultNsgName
   }
 }
 
@@ -95,5 +102,12 @@ module modPeer 'modules/peer.bicep' = {
     parCoreVnetName: modCore.outputs.outVnetName
     parSpokeDevVnetName: modSpokeDev.outputs.outVnetName
     parSpokeProdVnetName: modSpokeProd.outputs.outVnetName
+  }
+}
+
+module modDefaultNsg 'modules/nsg.bicep' = {
+  name: 'defaultNsg'
+  params: {
+    parLocation: parLocation
   }
 }

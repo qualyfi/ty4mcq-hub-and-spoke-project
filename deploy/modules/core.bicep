@@ -12,9 +12,12 @@ param parSubnet2Prefix string
 param parPrivateIPAllocationMethod string
 param parPrivateIPAddress string
 
+param parDefaultNsgName string
+
 param parVmName string
 param parVmSize string
 
+param parComputerName string
 @secure()
 param parAdminUsername string
 @secure()
@@ -26,6 +29,11 @@ param parSku string
 param parVersion string
 
 param parOsDiskCreateOption string
+
+resource resDefaultNsg 'Microsoft.Network/networkSecurityGroups@2023-05-01' existing = {
+  name: parDefaultNsgName
+}
+
 
 resource resVnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
   name: parVnetName
@@ -41,38 +49,24 @@ resource resVnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
         name: parSubnet1Name
         properties: {
           addressPrefix: parSubnet1Prefix
+          networkSecurityGroup: {
+            id: resDefaultNsg.id
+          }
         }
       }
       {
         name: parSubnet2Name
         properties: {
           addressPrefix: parSubnet2Prefix
-        }
-      }
-    ]
-  }
-}
-output outVnetName string = resVnet.name
-
-resource resNic 'Microsoft.Network/networkInterfaces@2023-05-01' = {
-  name: 'nic-${parVmName}'
-  location: parLocation
-  properties: {
-    ipConfigurations: [
-      {
-        name: 'ipconfig1'
-        properties: {
-          privateIPAllocationMethod: parPrivateIPAllocationMethod
-          privateIPAddress: parPrivateIPAddress
-          
-          subnet: {
-            id: varSubnet1Ref
+          networkSecurityGroup: {
+            id: resDefaultNsg.id
           }
         }
       }
     ]
   }
 }
+output outVnetName string = resVnet.name
 
 resource ResVm 'Microsoft.Compute/virtualMachines@2023-07-01' = {
   name: parVmName
@@ -82,7 +76,7 @@ resource ResVm 'Microsoft.Compute/virtualMachines@2023-07-01' = {
       vmSize: parVmSize
     }
     osProfile: {
-      computerName: parVmName
+      computerName: parComputerName
       adminUsername: parAdminUsername
       adminPassword: parAdminPassword
     }
@@ -104,5 +98,24 @@ resource ResVm 'Microsoft.Compute/virtualMachines@2023-07-01' = {
         }
       ]
     }
+  }
+}
+resource resNic 'Microsoft.Network/networkInterfaces@2023-05-01' = {
+  name: 'nic-${parVmName}'
+  location: parLocation
+  properties: {
+    ipConfigurations: [
+      {
+        name: 'ipconfig1'
+        properties: {
+          privateIPAllocationMethod: parPrivateIPAllocationMethod
+          privateIPAddress: parPrivateIPAddress
+          
+          subnet: {
+            id: varSubnet1Ref
+          }
+        }
+      }
+    ]
   }
 }
