@@ -11,6 +11,9 @@ param parSubnet2Prefix string
 param parSubnet3Name string
 param parSubnet3Prefix string
 
+param parDestVnetName string
+param parDestVnetId string
+
 resource virtualNetwork 'Microsoft.Network/virtualNetworks@2019-11-01' = {
   name: parVnetName
   location: parLocation
@@ -40,5 +43,18 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2019-11-01' = {
         }
       }
     ]
+  }
+
+  resource peering 'virtualNetworkPeerings@2020-07-01' = {
+    name: 'peer-${parVnetName}-to-${parDestVnetName}'
+    properties: {
+      allowVirtualNetworkAccess: true
+      allowForwardedTraffic: false
+      allowGatewayTransit: false
+      useRemoteGateways: false
+      remoteVirtualNetwork: {
+        id: parDestVnetId
+      }
+    }
   }
 }

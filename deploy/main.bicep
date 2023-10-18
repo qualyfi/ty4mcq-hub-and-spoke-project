@@ -33,6 +33,10 @@ module core 'modules/core.bicep' = {
 
     parSubnet2Name: 'KVSubnet'
     parSubnet2Prefix: '10.20.2.0/24'
+
+    parDestVnetName: hub.outputs.vnetName
+    parDestVnetId: hub.outputs.vnetId
+
   }
 }
 
@@ -51,6 +55,9 @@ module spokeDev 'modules/spoke.bicep' = {
 
     parSubnet3Name: 'StSubnet'
     parSubnet3Prefix: '10.30.3.0/24'
+
+    parDestVnetName: hub.outputs.vnetName
+    parDestVnetId: hub.outputs.vnetId
   }
 }
 
@@ -69,5 +76,8 @@ module spokeProd 'modules/spoke.bicep' = {
 
     parSubnet3Name: 'StSubnet'
     parSubnet3Prefix: '10.31.3.0/24'
+
+    parDestVnetName: hub.outputs.vnetName
+    parDestVnetId: hub.outputs.vnetId
   }
 }

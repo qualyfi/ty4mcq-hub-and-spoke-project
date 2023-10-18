@@ -51,3 +51,6 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2019-11-01' = {
     ]
   }
 }
+
+output vnetName string = parVnetName
+output vnetId string = virtualNetwork.id
