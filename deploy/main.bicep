@@ -16,8 +16,12 @@ module modHub 'modules/hub.bicep' = {
     parSubnet3Name: 'AzureFirewallSubnet'
     parSubnet3Prefix: '10.10.3.0/24'
 
-    parSubnet4Name: 'AzurebBastionSubnet'
+    parSubnet4Name: 'AzureBastionSubnet'
     parSubnet4Prefix: '10.10.4.0/24'
+
+    parBasName: 'bas-hub-${parLocation}-001'
+    parBasPublicIPName: 'pip-hub-${parLocation}-001'
+    parBasSku: 'Basic'
   }
 }
 
@@ -34,7 +38,6 @@ module modCore 'modules/core.bicep' = {
     parSubnet2Name: 'KVSubnet'
     parSubnet2Prefix: '10.20.2.0/24'
 
-    parPrivateIPAllocationMethod: 'static'
     parPrivateIPAddress: '10.20.1.20'
 
     parDefaultNsgName: modDefaultNsg.outputs.outDefaultNsgName

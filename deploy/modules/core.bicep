@@ -4,12 +4,11 @@ param parVnetPrefix string
 
 param parSubnet1Name string
 param parSubnet1Prefix string
-var varSubnet1Ref = resourceId('Microsoft.Network/virtualNetworks/subnets', parVnetName, parSubnet1Name)
+var varSubnet1ResId = resourceId('Microsoft.Network/virtualNetworks/subnets', parVnetName, parSubnet1Name)
 
 param parSubnet2Name string
 param parSubnet2Prefix string
 
-param parPrivateIPAllocationMethod string
 param parPrivateIPAddress string
 
 param parDefaultNsgName string
@@ -108,11 +107,11 @@ resource resNic 'Microsoft.Network/networkInterfaces@2023-05-01' = {
       {
         name: 'ipconfig1'
         properties: {
-          privateIPAllocationMethod: parPrivateIPAllocationMethod
+          privateIPAllocationMethod: 'Static'
           privateIPAddress: parPrivateIPAddress
           
           subnet: {
-            id: varSubnet1Ref
+            id: varSubnet1ResId
           }
         }
       }

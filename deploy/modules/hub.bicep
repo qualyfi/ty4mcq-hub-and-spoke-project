@@ -13,6 +13,11 @@ param parSubnet3Prefix string
 
 param parSubnet4Name string
 param parSubnet4Prefix string
+var varSubnet4ResId = resourceId('Microsoft.Network/virtualNetworks/subnets', parVnetName, parSubnet4Name)
+
+param parBasName string
+param parBasPublicIPName string
+param parBasSku string
 
 resource resVnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
   name: parVnetName
@@ -51,5 +56,36 @@ resource resVnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
     ]
   }
 }
-
 output outVnetName string = resVnet.name
+
+resource resBasPublicIP 'Microsoft.Network/publicIPAddresses@2023-05-01' = {
+  name: parBasPublicIPName
+  location: parLocation
+  properties: {
+    publicIPAllocationMethod: 'Static'
+  }
+}
+
+resource resBastionHost 'Microsoft.Network/bastionHosts@2023-05-01' = {
+  name: parBasName
+  location: parLocation
+  sku: {
+    name: parBasSku
+  }
+  properties: {
+    ipConfigurations: [
+      {
+        name: 'ipConfig'
+        properties: {
+          privateIPAllocationMethod:'Dynamic'
+          publicIPAddress: {
+            id: resBasPublicIP.id
+          }
+          subnet: {
+            id: varSubnet4ResId
+          }
+        }
+      }
+    ]
+  }
+}
