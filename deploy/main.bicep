@@ -33,6 +33,22 @@ module modCore 'modules/core.bicep' = {
 
     parSubnet2Name: 'KVSubnet'
     parSubnet2Prefix: '10.20.2.0/24'
+
+    parPrivateIPAllocationMethod: 'static'
+    parPrivateIPAddress: '10.20.1.20'
+
+    parVmName: 'vm1core001'
+    parVmSize: 'Standard_D2S_v3'
+    
+    parAdminUsername: 'ty4mcq'
+    parAdminPassword: 'QualyfiProject123!'
+    
+    parPublisher: 'MicrosoftWindowsServer'
+    parOffer: 'WindowsServer'
+    parSku: '2022-datacenter-azure-edition'
+    parVersion: 'latest'
+    
+    parOsDiskCreateOption: 'FromImage'
   }
 }
 

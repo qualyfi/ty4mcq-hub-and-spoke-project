@@ -4,8 +4,10 @@ param parVnetPrefix string
 
 param parSubnet1Name string
 param parSubnet1Prefix string
+
 param parSubnet2Name string
 param parSubnet2Prefix string
+
 param parSubnet3Name string
 param parSubnet3Prefix string
 
