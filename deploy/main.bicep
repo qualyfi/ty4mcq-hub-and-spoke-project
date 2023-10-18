@@ -1,6 +1,6 @@
 param parLocation string = resourceGroup().location
 
-module hub 'modules/hub.bicep' = {
+module modHub 'modules/hub.bicep' = {
   name: 'hub'
   params: {
     parVnetName: 'vnet-hub-${parLocation}-001'
@@ -21,7 +21,7 @@ module hub 'modules/hub.bicep' = {
   }
 }
 
-module core 'modules/core.bicep' = {
+module modCore 'modules/core.bicep' = {
   name: 'core'
   params: {
     parVnetName: 'vnet-core-${parLocation}-001'
@@ -33,14 +33,10 @@ module core 'modules/core.bicep' = {
 
     parSubnet2Name: 'KVSubnet'
     parSubnet2Prefix: '10.20.2.0/24'
-
-    parDestVnetName: hub.outputs.vnetName
-    parDestVnetId: hub.outputs.vnetId
-
   }
 }
 
-module spokeDev 'modules/spoke.bicep' = {
+module modSpokeDev 'modules/spoke.bicep' = {
   name: 'spokeDev'
   params: {
     parVnetName: 'vnet-dev-${parLocation}-001'
@@ -55,13 +51,10 @@ module spokeDev 'modules/spoke.bicep' = {
 
     parSubnet3Name: 'StSubnet'
     parSubnet3Prefix: '10.30.3.0/24'
-
-    parDestVnetName: hub.outputs.vnetName
-    parDestVnetId: hub.outputs.vnetId
   }
 }
 
-module spokeProd 'modules/spoke.bicep' = {
+module modSpokeProd 'modules/spoke.bicep' = {
   name: 'spokeProd'
   params: {
     parVnetName: 'vnet-prod-${parLocation}-001'
@@ -76,8 +69,5 @@ module spokeProd 'modules/spoke.bicep' = {
 
     parSubnet3Name: 'StSubnet'
     parSubnet3Prefix: '10.31.3.0/24'
-
-    parDestVnetName: hub.outputs.vnetName
-    parDestVnetId: hub.outputs.vnetId
   }
 }

@@ -14,7 +14,7 @@ param parSubnet3Prefix string
 param parSubnet4Name string
 param parSubnet4Prefix string
 
-resource virtualNetwork 'Microsoft.Network/virtualNetworks@2019-11-01' = {
+resource resVnet 'Microsoft.Network/virtualNetworks@2019-11-01' = {
   name: parVnetName
   location: parLocation
   properties: {
@@ -53,4 +53,4 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2019-11-01' = {
 }
 
 output vnetName string = parVnetName
-output vnetId string = virtualNetwork.id
+output vnetId string = resVnet.id
