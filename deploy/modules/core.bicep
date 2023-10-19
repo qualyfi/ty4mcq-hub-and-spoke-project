@@ -4,7 +4,6 @@ param parVnetPrefix string
 
 param parSubnet1Name string
 param parSubnet1Prefix string
-var varSubnet1ResId = resourceId('Microsoft.Network/virtualNetworks/subnets', parVnetName, parSubnet1Name)
 
 param parSubnet2Name string
 param parSubnet2Prefix string
@@ -111,10 +110,11 @@ resource resNic 'Microsoft.Network/networkInterfaces@2023-05-01' = {
           privateIPAddress: parPrivateIPAddress
           
           subnet: {
-            id: varSubnet1ResId
+            id: resVnet.properties.subnets[0].id
           }
         }
       }
     ]
   }
 }
+

@@ -19,9 +19,11 @@ module modHub 'modules/hub.bicep' = {
     parSubnet4Name: 'AzureBastionSubnet'
     parSubnet4Prefix: '10.10.4.0/24'
 
+    parBasPublicIPName: 'pip-hub-${parLocation}-bas-001'
     parBasName: 'bas-hub-${parLocation}-001'
-    parBasPublicIPName: 'pip-hub-${parLocation}-001'
     parBasSku: 'Basic'
+    
+    parAfwPublicIPName: 'pip-hub-${parLocation}-afw-001'
   }
 }
 
