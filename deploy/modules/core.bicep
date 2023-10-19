@@ -1,32 +1,17 @@
-param parVnetName string
 param parLocation string
-param parVnetPrefix string
-
-param parSubnet1Name string
-param parSubnet1Prefix string
-
-param parSubnet2Name string
-param parSubnet2Prefix string
-
-param parPrivateIPAddress string
 
 param parDefaultNsgName string
 
-param parVmName string
 param parVmSize string
-
 param parComputerName string
 @secure()
 param parAdminUsername string
 @secure()
 param parAdminPassword string
-
 param parPublisher string
 param parOffer string
 param parSku string
 param parVersion string
-
-param parOsDiskCreateOption string
 
 resource resDefaultNsg 'Microsoft.Network/networkSecurityGroups@2023-05-01' existing = {
   name: parDefaultNsgName
@@ -34,28 +19,28 @@ resource resDefaultNsg 'Microsoft.Network/networkSecurityGroups@2023-05-01' exis
 
 
 resource resVnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
-  name: parVnetName
+  name: 'vnet-core-${parLocation}-001'
   location: parLocation
   properties: {
     addressSpace: {
       addressPrefixes: [
-        parVnetPrefix
+        '10.20.0.0/16'
       ]
     }
     subnets: [
       {
-        name: parSubnet1Name
+        name: 'VMSubnet'
         properties: {
-          addressPrefix: parSubnet1Prefix
+          addressPrefix: '10.20.1.0/24'
           networkSecurityGroup: {
             id: resDefaultNsg.id
           }
         }
       }
       {
-        name: parSubnet2Name
+        name: 'KVSubnet'
         properties: {
-          addressPrefix: parSubnet2Prefix
+          addressPrefix: '10.20.2.0/24'
           networkSecurityGroup: {
             id: resDefaultNsg.id
           }
@@ -66,8 +51,8 @@ resource resVnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
 }
 output outVnetName string = resVnet.name
 
-resource ResVm 'Microsoft.Compute/virtualMachines@2023-07-01' = {
-  name: parVmName
+resource resVm 'Microsoft.Compute/virtualMachines@2023-07-01' = {
+  name: 'vm-core-${parLocation}-001'
   location: parLocation
   properties: {
     hardwareProfile: {
@@ -86,28 +71,28 @@ resource ResVm 'Microsoft.Compute/virtualMachines@2023-07-01' = {
         version: parVersion
       }
       osDisk: {
-        createOption: parOsDiskCreateOption
+        createOption: 'FromImage'
       }
     }
     networkProfile: {
       networkInterfaces: [
         {
-          id: resNic.id
+          id: resVmNic.id
         }
       ]
     }
   }
 }
-resource resNic 'Microsoft.Network/networkInterfaces@2023-05-01' = {
-  name: 'nic-${parVmName}'
+resource resVmNic 'Microsoft.Network/networkInterfaces@2023-05-01' = {
+  name: 'nic-core-${parLocation}-vm-001'
   location: parLocation
   properties: {
     ipConfigurations: [
       {
-        name: 'ipconfig1'
+        name: 'ipConfig'
         properties: {
           privateIPAllocationMethod: 'Static'
-          privateIPAddress: parPrivateIPAddress
+          privateIPAddress: '10.20.1.20'
           
           subnet: {
             id: resVnet.properties.subnets[0].id

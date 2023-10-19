@@ -1,58 +1,37 @@
-param parVnetName string
 param parLocation string
-param parVnetPrefix string
-
-param parSubnet1Name string
-param parSubnet1Prefix string
-
-param parSubnet2Name string
-param parSubnet2Prefix string
-
-param parSubnet3Name string
-param parSubnet3Prefix string
-
-
-param parSubnet4Name string
-param parSubnet4Prefix string
-
-param parBasPublicIPName string
-param parBasName string
-param parBasSku string
-
-param parAfwPublicIPName string
 
 resource resVnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
-  name: parVnetName
+  name: 'vnet-hub-${parLocation}-001'
   location: parLocation
   properties: {
     addressSpace: {
       addressPrefixes: [
-        parVnetPrefix
+        '10.10.0.0/16'
       ]
     }
     subnets: [
       {
-        name: parSubnet1Name
+        name: 'GatewaySubnet'
         properties: {
-          addressPrefix: parSubnet1Prefix
+          addressPrefix: '10.10.1.0/24'
         }
       }
       {
-        name: parSubnet2Name
+        name: 'AppgwSubnet'
         properties: {
-          addressPrefix: parSubnet2Prefix
+          addressPrefix: '10.10.2.0/24'
         }
       }
       {
-        name: parSubnet3Name
+        name: 'AzureFirewallSubnet'
         properties: {
-          addressPrefix: parSubnet3Prefix
+          addressPrefix: '10.10.3.0/24'
         }
       }
       {
-        name: parSubnet4Name
+        name: 'AzureBastionSubnet'
         properties: {
-          addressPrefix: parSubnet4Prefix
+          addressPrefix: '10.10.4.0/24'
         }
       }
     ]
@@ -61,7 +40,7 @@ resource resVnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
 output outVnetName string = resVnet.name
 
 resource resBasPublicIP 'Microsoft.Network/publicIPAddresses@2023-05-01' = {
-  name: parBasPublicIPName
+  name: 'pip-hub-${parLocation}-bas-001'
   location: parLocation
   sku: {
     name: 'Standard'
@@ -71,11 +50,11 @@ resource resBasPublicIP 'Microsoft.Network/publicIPAddresses@2023-05-01' = {
   }
 }
 
-resource resBastionHost 'Microsoft.Network/bastionHosts@2023-05-01' = {
-  name: parBasName
+resource resBas 'Microsoft.Network/bastionHosts@2023-05-01' = {
+  name: 'bas-hub-${parLocation}-001'
   location: parLocation
   sku: {
-    name: parBasSku
+    name: 'Basic'
   }
   properties: {
     ipConfigurations: [
@@ -96,7 +75,7 @@ resource resBastionHost 'Microsoft.Network/bastionHosts@2023-05-01' = {
 }
 
 resource resAfwPublicIP 'Microsoft.Network/publicIPAddresses@2023-05-01' = {
-  name: parAfwPublicIPName
+  name: 'pip-hub-${parLocation}-afw-001'
   location: parLocation
   sku: {
     name: 'Standard'
@@ -105,3 +84,44 @@ resource resAfwPublicIP 'Microsoft.Network/publicIPAddresses@2023-05-01' = {
     publicIPAllocationMethod: 'Static'
   }
 }
+resource resAfwPolicy 'Microsoft.Network/firewallPolicies@2023-05-01' = {
+  name: 'AfwPolicy'
+  location: parLocation
+  properties: {
+    sku: {
+      tier: 'Standard'
+    }
+    dnsSettings: {
+      enableProxy: true
+    }
+    threatIntelMode: 'Alert'
+  }
+}
+
+resource resAfw 'Microsoft.Network/azureFirewalls@2023-05-01' = {
+  name: 'afw-hub-${parLocation}-001'
+  location: parLocation
+  properties: {
+    sku: {
+      name: 'AZFW_VNet'
+      tier: 'Standard'
+    }    
+    firewallPolicy: {
+      id: resAfwPolicy.id
+    }
+    ipConfigurations: [
+      {
+        name: 'ipConfig'
+        properties: {
+          subnet: {
+            id: resVnet.properties.subnets[2].id
+          }
+          publicIPAddress: {
+            id: resAfwPublicIP.id
+          }
+        }
+      }
+    ]
+  }
+}
+
