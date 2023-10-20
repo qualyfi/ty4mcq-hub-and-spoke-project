@@ -68,7 +68,7 @@ resource resVnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
 }
 output outVnetName string = resVnet.name
 
-//VM + VM NIC
+//VM + VM NIC + VM Extension
 resource resVm 'Microsoft.Compute/virtualMachines@2023-07-01' = {
   name: 'vm-core-${parLocation}-001'
   location: parLocation
@@ -118,5 +118,19 @@ resource resVmNic 'Microsoft.Network/networkInterfaces@2023-05-01' = {
         }
       }
     ]
+  }
+}
+resource resVmExtension 'Microsoft.Compute/virtualMachines/extensions@2023-07-01' = {
+  name: 'IaaSAntimalware'
+  location: parLocation
+  parent: resVm
+  properties: {
+    publisher: 'Microsoft.Azure.Security'
+    type: 'IaaSAntimalware'
+    typeHandlerVersion: '1.3'
+    autoUpgradeMinorVersion: true
+    settings: {
+      AntimalwareEnabled: 'true'
+    }
   }
 }
