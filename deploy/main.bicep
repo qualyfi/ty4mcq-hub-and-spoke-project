@@ -1,6 +1,10 @@
 param parLocation string = resourceGroup().location
 param parKeyVaultName string
 
+resource resKv 'Microsoft.KeyVault/vaults@2023-02-01' existing = {
+  name: parKeyVaultName
+}
+
 module modHub 'modules/hub.bicep' = {
   name: 'hub'
   params: {
@@ -32,8 +36,8 @@ module modCore 'modules/core.bicep' = {
     parVmSize: 'Standard_D2S_v3'
     
     parComputerName: 'vm1core001'
-    parAdminUsername: 'ty4mcq'
-    parAdminPassword: 'QualyfiProject123!'
+    parAdminUsername: resKv.getSecret('vmAdminUsername')
+    parAdminPassword: resKv.getSecret('vmAdminPassword')
     
     parPublisher: 'MicrosoftWindowsServer'
     parOffer: 'WindowsServer'
