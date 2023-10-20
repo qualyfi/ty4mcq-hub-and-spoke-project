@@ -1,4 +1,5 @@
 param parLocation string = resourceGroup().location
+param parKeyVaultName string
 
 module modHub 'modules/hub.bicep' = {
   name: 'hub'
