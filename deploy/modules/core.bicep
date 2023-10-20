@@ -1,6 +1,12 @@
 param parLocation string
+param parVnetName string
+param parVnetAddressPrefix string
+
+param parVMSubnetAddressPrefix string
+param parKVSubnetAddressPrefix string
 
 param parDefaultNsgName string
+param parRtName string
 
 param parVmSize string
 param parComputerName string
@@ -13,36 +19,47 @@ param parOffer string
 param parSku string
 param parVersion string
 
+//Declaring Default NSG as resource to reference in Core VNet
 resource resDefaultNsg 'Microsoft.Network/networkSecurityGroups@2023-05-01' existing = {
   name: parDefaultNsgName
 }
+//Declaring Route Table as resource to reference in Core VNet
+resource resRt 'Microsoft.Network/routeTables@2023-05-01' existing = {
+name: parRtName
+}
 
-
+//Core VNet
 resource resVnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
-  name: 'vnet-core-${parLocation}-001'
+  name: parVnetName
   location: parLocation
   properties: {
     addressSpace: {
       addressPrefixes: [
-        '10.20.0.0/16'
+        parVnetAddressPrefix
       ]
     }
     subnets: [
       {
         name: 'VMSubnet'
         properties: {
-          addressPrefix: '10.20.1.0/24'
+          addressPrefix: parVMSubnetAddressPrefix
           networkSecurityGroup: {
             id: resDefaultNsg.id
+          }
+          routeTable: {
+            id: resRt.id
           }
         }
       }
       {
         name: 'KVSubnet'
         properties: {
-          addressPrefix: '10.20.2.0/24'
+          addressPrefix: parKVSubnetAddressPrefix
           networkSecurityGroup: {
             id: resDefaultNsg.id
+          }
+          routeTable: {
+            id: resRt.id
           }
         }
       }
@@ -51,6 +68,7 @@ resource resVnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
 }
 output outVnetName string = resVnet.name
 
+//VM + VM NIC
 resource resVm 'Microsoft.Compute/virtualMachines@2023-07-01' = {
   name: 'vm-core-${parLocation}-001'
   location: parLocation
@@ -102,4 +120,3 @@ resource resVmNic 'Microsoft.Network/networkInterfaces@2023-05-01' = {
     ]
   }
 }
-

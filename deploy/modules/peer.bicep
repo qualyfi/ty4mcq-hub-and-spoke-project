@@ -3,6 +3,7 @@ param parCoreVnetName string
 param parSpokeDevVnetName string
 param parSpokeProdVnetName string
 
+//Declaring existing VNets as resources to reference in peering resources
 resource resHubVnet 'Microsoft.Network/virtualNetworks@2023-05-01' existing = {
   name: parHubVnetName
 }
@@ -16,7 +17,7 @@ resource resSpokeProdVnet 'Microsoft.Network/virtualNetworks@2023-05-01' existin
   name: parSpokeProdVnetName
 }
 
-@description('Peering connection to/from Core and Hub.')
+//Peering connection to/from Core and Hub
 resource resPeerCoreToHub 'Microsoft.Network/virtualNetworks/virtualNetworkPeerings@2023-05-01' = {
   name: 'peer-${parCoreVnetName}-to-${parHubVnetName}'
   parent: resCoreVnet
@@ -44,7 +45,7 @@ resource resPeerHubToCore 'Microsoft.Network/virtualNetworks/virtualNetworkPeeri
   }
 }
 
-@description('Peering connection to/from SpokeDev and Hub.')
+//Peering connection to/from SpokeDev and Hub
 resource resPeerSpokeDevToHub 'Microsoft.Network/virtualNetworks/virtualNetworkPeerings@2023-05-01' = {
   name: 'peer-${parSpokeDevVnetName}-to-${parHubVnetName}'
   parent: resSpokeDevVnet
@@ -72,7 +73,7 @@ resource resPeerHubToSpokeDev 'Microsoft.Network/virtualNetworks/virtualNetworkP
   }
 }
 
-@description('Peering connection to/from SpokeProd and Hub.')
+//Peering connection to/from SpokeProd and Hub
 resource resPeerSpokeProdToHub 'Microsoft.Network/virtualNetworks/virtualNetworkPeerings@2023-05-01' = {
   name: 'peer-${parSpokeProdVnetName}-to-${parHubVnetName}'
   parent: resSpokeProdVnet

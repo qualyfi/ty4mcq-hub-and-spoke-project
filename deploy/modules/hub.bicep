@@ -1,37 +1,45 @@
 param parLocation string
+param parVnetName string
+param parVnetAddressPrefix string
 
+param parGatewaySubnetAddressPrefix string
+param parAppgwSubnetAddressPrefix string
+param parAzureFirewallSubnetAddressPrefix string
+param parAzureBastionSubnetAddressPrefix string
+
+//Hub VNet
 resource resVnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
-  name: 'vnet-hub-${parLocation}-001'
+  name: parVnetName
   location: parLocation
   properties: {
     addressSpace: {
       addressPrefixes: [
-        '10.10.0.0/16'
+        parVnetAddressPrefix
       ]
     }
     subnets: [
       {
         name: 'GatewaySubnet'
         properties: {
-          addressPrefix: '10.10.1.0/24'
+          addressPrefix: parGatewaySubnetAddressPrefix
         }
       }
       {
         name: 'AppgwSubnet'
         properties: {
-          addressPrefix: '10.10.2.0/24'
+          addressPrefix: parAppgwSubnetAddressPrefix
         }
       }
       {
         name: 'AzureFirewallSubnet'
         properties: {
-          addressPrefix: '10.10.3.0/24'
+          addressPrefix: parAzureFirewallSubnetAddressPrefix
         }
       }
       {
         name: 'AzureBastionSubnet'
         properties: {
-          addressPrefix: '10.10.4.0/24'
+          addressPrefix: parAzureBastionSubnetAddressPrefix
         }
       }
     ]
@@ -39,6 +47,7 @@ resource resVnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
 }
 output outVnetName string = resVnet.name
 
+//Bastion + Bastion Public IP
 resource resBasPublicIP 'Microsoft.Network/publicIPAddresses@2023-05-01' = {
   name: 'pip-hub-${parLocation}-bas-001'
   location: parLocation
@@ -49,7 +58,6 @@ resource resBasPublicIP 'Microsoft.Network/publicIPAddresses@2023-05-01' = {
     publicIPAllocationMethod: 'Static'
   }
 }
-
 resource resBas 'Microsoft.Network/bastionHosts@2023-05-01' = {
   name: 'bas-hub-${parLocation}-001'
   location: parLocation
@@ -74,6 +82,7 @@ resource resBas 'Microsoft.Network/bastionHosts@2023-05-01' = {
   }
 }
 
+//Firewall + Firewall Policy + any/any Rule, + Firewall Public IP
 resource resAfwPublicIP 'Microsoft.Network/publicIPAddresses@2023-05-01' = {
   name: 'pip-hub-${parLocation}-afw-001'
   location: parLocation
@@ -97,7 +106,41 @@ resource resAfwPolicy 'Microsoft.Network/firewallPolicies@2023-05-01' = {
     threatIntelMode: 'Alert'
   }
 }
-
+resource resAfwPolicyRuleCollectionGroup 'Microsoft.Network/firewallPolicies/ruleCollectionGroups@2023-05-01' = {
+  parent: resAfwPolicy
+  name: 'DefaultNetworkRuleCollectionGroup'
+  properties: {
+    priority: 200
+    ruleCollections: [
+      {
+        ruleCollectionType: 'FirewallPolicyFilterRuleCollection'
+        action: {
+          type: 'Allow'
+        }
+        name: 'NetworkRuleCollection'
+        priority: 1000
+        rules: [
+          {
+            ruleType: 'NetworkRule'
+            name: 'any/any'
+            ipProtocols: [
+              'Any'
+            ]
+            sourceAddresses: [
+              '*'
+            ]
+            destinationAddresses: [
+              '*'
+            ]
+            destinationPorts: [
+              '*'
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
 resource resAfw 'Microsoft.Network/azureFirewalls@2023-05-01' = {
   name: 'afw-hub-${parLocation}-001'
   location: parLocation
@@ -124,4 +167,4 @@ resource resAfw 'Microsoft.Network/azureFirewalls@2023-05-01' = {
     ]
   }
 }
-
+output outAfwName string = resAfw.name
