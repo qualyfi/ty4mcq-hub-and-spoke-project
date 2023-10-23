@@ -1,4 +1,5 @@
 param parLocation string = resourceGroup().location
+param utc string = utcNow()
 param parKeyVaultName string
 
 resource resKv 'Microsoft.KeyVault/vaults@2023-02-01' existing = {
@@ -59,6 +60,15 @@ module modSpokeDev 'modules/spoke.bicep' = {
 
     parDefaultNsgName: modDefaultNsg.outputs.outDefaultNsgName
     parRtName: modRt.outputs.outRtName
+
+    parAspName: 'asp-dev-${parLocation}-001-${uniqueString(utc)}'
+    parAspSkuName: 'B1'
+
+    parAsName: 'as-dev-${parLocation}-001-${uniqueString(utc)}'
+    parLinuxFxVersion: 'DOTNETCORE|7.0'
+
+    parRepoUrl: 'https://github.com/Azure-Samples/dotnetcore-docs-hello-world'
+    parBranch: 'master'
   }
 }
 
@@ -76,6 +86,14 @@ module modSpokeProd 'modules/spoke.bicep' = {
     parDefaultNsgName: modDefaultNsg.outputs.outDefaultNsgName
     parRtName: modRt.outputs.outRtName
 
+    parAspName: 'asp-prod-${parLocation}-001-${uniqueString(utc)}'
+    parAspSkuName: 'B1'
+
+    parAsName: 'as-prod-${parLocation}-001-${uniqueString(utc)}'
+    parLinuxFxVersion: 'DOTNETCORE|7.0'
+
+    parRepoUrl: 'https://github.com/Azure-Samples/dotnetcore-docs-hello-world'
+    parBranch: 'master'
   }
 }
 
