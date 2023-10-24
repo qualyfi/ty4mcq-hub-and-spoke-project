@@ -118,7 +118,6 @@ resource resSrcControls 'Microsoft.Web/sites/sourcecontrols@2022-09-01' = {
     isManualIntegration: true
   }
 }
-output outWaName string = resWa.name
 
 resource resWaPe 'Microsoft.Network/privateEndpoints@2023-05-01' = {
   name: 'pe-${parSpokeName}-${parLocation}-wa-001'
@@ -174,3 +173,5 @@ resource resWaPeDnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroup
 
 output outVnetName string = resVnet.name
 output outVnetId string = resVnet.id
+output outWaName string = resWa.name
+output outWaFqdn string = resWa.properties.defaultHostName

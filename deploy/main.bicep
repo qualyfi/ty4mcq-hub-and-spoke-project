@@ -17,8 +17,11 @@ module modHub 'modules/hub.bicep' = {
     parAppgwSubnetAddressPrefix: '10.10.2.0/24'
     parAzureFirewallSubnetAddressPrefix: '10.10.3.0/24'
     parAzureBastionSubnetAddressPrefix: '10.10.4.0/24'
+
     parWaPDnsZoneName: modWaPDnsZone.outputs.outPDnsZoneName
 
+    parAgwName: 'agw-hub-${parLocation}-001'
+    parProdWaFqdn: modSpokeProd.outputs.outWaFqdn
   }
 }
 
@@ -164,8 +167,8 @@ module modRt 'modules/rt.bicep' = {
   name: 'rt'
   params: {
     parLocation: parLocation
-    // parAfwIpAddress: '10.30.3.4'
-    parAfwIpAddress: modHub.outputs.outAfwIpAddress
+    parAfwIpAddress: '10.30.3.4'
+    // parAfwIpAddress: modHub.outputs.outAfwIpAddress
 
   }
 }
