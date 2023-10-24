@@ -5,6 +5,8 @@ param parVnetAddressPrefix string
 param parVMSubnetAddressPrefix string
 param parKVSubnetAddressPrefix string
 
+param parWaPDnsZoneName string
+
 param parDefaultNsgId string
 param parRtId string
 
@@ -57,8 +59,17 @@ resource resVnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
     ]
   }
 }
-output outVnetName string = resVnet.name
-output outVnetId string = resVnet.id
+resource resWaPDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
+  name: '${parWaPDnsZoneName}/${parWaPDnsZoneName}-${parSpokeName}-link'
+  location: 'global'
+  properties: {
+    registrationEnabled: false
+    virtualNetwork: {
+      id: resVnet.id
+    }
+  }
+}
+
 
 //VM + VM NIC + VM Extension
 resource resVm 'Microsoft.Compute/virtualMachines@2023-07-01' = {
@@ -126,3 +137,6 @@ resource resVmExtension 'Microsoft.Compute/virtualMachines/extensions@2023-07-01
     }
   }
 }
+
+output outVnetName string = resVnet.name
+output outVnetId string = resVnet.id

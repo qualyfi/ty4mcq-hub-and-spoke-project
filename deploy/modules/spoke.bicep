@@ -140,23 +140,23 @@ resource resWaPe 'Microsoft.Network/privateEndpoints@2023-05-01' = {
     }
   }
 }
-// resource resWaPeNic 'Microsoft.Network/networkInterfaces@2023-05-01' = {
-//   name: 'nic-${parSpokeName}-${parLocation}-wa-001'
-//   location: parLocation
-//   properties: {
-//     ipConfigurations: [
-//       {
-//         name: 'ipConfig'
-//         properties: {
-//           privateIPAllocationMethod: 'Dynamic'
-//           subnet: {
-//             id: resVnet.properties.subnets[0].id
-//           }
-//         }
-//       }
-//     ]
-//   }
-// }
+resource resWaPeNic 'Microsoft.Network/networkInterfaces@2023-05-01' = {
+  name: 'nic-${parSpokeName}-${parLocation}-wa-001'
+  location: parLocation
+  properties: {
+    ipConfigurations: [
+      {
+        name: 'ipConfig'
+        properties: {
+          privateIPAllocationMethod: 'Dynamic'
+          subnet: {
+            id: resVnet.properties.subnets[0].id
+          }
+        }
+      }
+    ]
+  }
+}
 resource resWaPeDnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-05-01' = {
   name: 'dnsGroupName'
   parent: resWaPe
