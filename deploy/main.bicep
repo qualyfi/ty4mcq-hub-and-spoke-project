@@ -1,5 +1,5 @@
 param parLocation string = resourceGroup().location
-param utc string = utcNow()
+param parUtc string = utcNow()
 param parKeyVaultName string
 
 resource resKv 'Microsoft.KeyVault/vaults@2023-02-01' existing = {
@@ -10,7 +10,7 @@ module modHub 'modules/hub.bicep' = {
   name: 'hub'
   params: {
     parLocation: parLocation
-    parVnetName: 'vnet-hub-${parLocation}-001'
+    parSpokeName: 'hub'
     parVnetAddressPrefix: '10.10.0.0/16'
     
     parGatewaySubnetAddressPrefix: '10.10.1.0/24'
@@ -25,7 +25,7 @@ module modCore 'modules/core.bicep' = {
   name: 'core'
   params: {
     parLocation: parLocation
-    parVnetName: 'vnet-core-${parLocation}-001'
+    parSpokeName: 'core'
     parVnetAddressPrefix: '10.20.0.0/16'
     
     parVMSubnetAddressPrefix: '10.20.1.0/24'
@@ -51,30 +51,24 @@ module modSpokeDev 'modules/spoke.bicep' = {
   name: 'spokeDev'
   params: {
     parLocation: parLocation
-    // parSpokeName: 'dev'
-    parVnetName: 'vnet-dev-${parLocation}-001'
+    parSpokeName: 'dev'
     parVnetAddressPrefix: '10.30.0.0/16'
     
     parAppSubnetAddressPrefix: '10.30.1.0/24'
     parSqlSubnetAddressPrefix: '10.30.2.0/24'
     parStSubnetAddressPrefix: '10.30.3.0/24'
 
-    parSpokeName: 'dev'
-
     parDefaultNsgId: modDefaultNsg.outputs.outDefaultNsgId
     parRtId: modRt.outputs.outRtId
 
-    parAspName: 'asp-dev-${parLocation}-001-${uniqueString(utc)}'
+    parUtc: parUtc
     parAspSkuName: 'B1'
 
-    parWaName: 'as-dev-${parLocation}-001-${uniqueString(utc)}'
     parLinuxFxVersion: 'DOTNETCORE|7.0'
 
     parRepoUrl: 'https://github.com/Azure-Samples/dotnetcore-docs-hello-world'
     parBranch: 'master'
 
-    parWaPeName: 'pe-dev-${parLocation}-wa-001'
-    // parWaPeNicName: 'nic-dev-${parLocation}-wa-001'
     parWaPDnsZoneName: modWaPDnsZone.outputs.outPDnsZoneName
     parWaPDnsZoneId: modWaPDnsZone.outputs.outPDnsZoneId
   }
@@ -84,29 +78,25 @@ module modSpokeProd 'modules/spoke.bicep' = {
   name: 'spokeProd'
   params: {
     parLocation: parLocation
-    parVnetName: 'vnet-prod-${parLocation}-001'
+    parSpokeName: 'prod'
+
     parVnetAddressPrefix: '10.31.0.0/16'
     
     parAppSubnetAddressPrefix: '10.31.1.0/24'
     parSqlSubnetAddressPrefix: '10.31.2.0/24'
     parStSubnetAddressPrefix: '10.31.3.0/24'
 
-    parSpokeName: 'prod'
-
     parDefaultNsgId: modDefaultNsg.outputs.outDefaultNsgId
     parRtId: modRt.outputs.outRtId
 
-    parAspName: 'asp-prod-${parLocation}-001-${uniqueString(utc)}'
+    parUtc: parUtc
     parAspSkuName: 'B1'
 
-    parWaName: 'as-prod-${parLocation}-001-${uniqueString(utc)}'
     parLinuxFxVersion: 'DOTNETCORE|7.0'
 
     parRepoUrl: 'https://github.com/Azure-Samples/dotnetcore-docs-hello-world'
     parBranch: 'master'
 
-    parWaPeName: 'pe-prod-${parLocation}-wa-001'
-    // parWaPeNicName: 'nic-prod-${parLocation}-wa-001'
     parWaPDnsZoneName: modWaPDnsZone.outputs.outPDnsZoneName
     parWaPDnsZoneId: modWaPDnsZone.outputs.outPDnsZoneId
   }

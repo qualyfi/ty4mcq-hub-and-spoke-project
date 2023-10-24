@@ -1,5 +1,5 @@
 param parLocation string
-param parVnetName string
+param parSpokeName string
 param parVnetAddressPrefix string
 
 param parVMSubnetAddressPrefix string
@@ -21,7 +21,7 @@ param parVersion string
 
 //Core VNet
 resource resVnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
-  name: parVnetName
+  name: 'vnet-${parSpokeName}-${parLocation}-001'
   location: parLocation
   properties: {
     addressSpace: {

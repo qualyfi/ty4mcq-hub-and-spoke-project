@@ -1,5 +1,6 @@
 param parLocation string
-param parVnetName string
+param parUtc string
+
 param parVnetAddressPrefix string
 
 param parAppSubnetAddressPrefix string
@@ -11,24 +12,20 @@ param parSpokeName string
 param parDefaultNsgId string
 param parRtId string
 
-param parAspName string
 param parAspSkuName string
 
-param parWaName string
 param parLinuxFxVersion string
 
 
 param parRepoUrl string
 param parBranch string
 
-param parWaPeName string
-// param parWaPeNicName string
 param parWaPDnsZoneName string
 param parWaPDnsZoneId string
 
 //Spoke VNet
 resource resVnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
-  name: parVnetName
+  name: 'vnet-${parSpokeName}-${parLocation}-001'
   location: parLocation
   properties: {
     addressSpace: {
@@ -88,10 +85,9 @@ resource resWaPDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLink
   }
 }
 
-
 //App Service Plan + Web App + Source Controls
 resource resAsp 'Microsoft.Web/serverfarms@2022-09-01' = {
-  name: parAspName
+  name: 'asp-${parSpokeName}-${parLocation}-001-${uniqueString(parUtc)}'
   location: parLocation
   properties: {
     reserved: true
@@ -102,7 +98,7 @@ resource resAsp 'Microsoft.Web/serverfarms@2022-09-01' = {
   kind: 'linux'
 }
 resource resWa 'Microsoft.Web/sites@2022-09-01' = {
-  name: parWaName
+  name: 'as-${parSpokeName}-${parLocation}-001-${uniqueString(parUtc)}'
   location: parLocation
   properties: {
     serverFarmId: resAsp.id
@@ -125,12 +121,12 @@ resource resSrcControls 'Microsoft.Web/sites/sourcecontrols@2022-09-01' = {
 output outWaName string = resWa.name
 
 resource resWaPe 'Microsoft.Network/privateEndpoints@2023-05-01' = {
-  name: parWaPeName
+  name: 'pe-${parSpokeName}-${parLocation}-wa-001'
   location: parLocation
   properties: {
     privateLinkServiceConnections: [
       {
-        name: parWaPeName
+        name: 'pe-${parSpokeName}-${parLocation}-wa-001'
         properties: {
           privateLinkServiceId: resWa.id
           groupIds: [
@@ -145,7 +141,7 @@ resource resWaPe 'Microsoft.Network/privateEndpoints@2023-05-01' = {
   }
 }
 // resource resWaPeNic 'Microsoft.Network/networkInterfaces@2023-05-01' = {
-//   name: parWaPeNicName
+//   name: 'nic-${parSpokeName}-${parLocation}-wa-001'
 //   location: parLocation
 //   properties: {
 //     ipConfigurations: [

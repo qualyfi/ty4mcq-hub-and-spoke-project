@@ -1,5 +1,5 @@
 param parLocation string
-param parVnetName string
+param parSpokeName string
 param parVnetAddressPrefix string
 
 param parGatewaySubnetAddressPrefix string
@@ -9,7 +9,7 @@ param parAzureBastionSubnetAddressPrefix string
 
 //Hub VNet
 resource resVnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
-  name: parVnetName
+  name: 'vnet-${parSpokeName}-${parLocation}-001'
   location: parLocation
   properties: {
     addressSpace: {
@@ -50,7 +50,7 @@ output outVnetId string = resVnet.id
 
 //Bastion + Bastion Public IP
 resource resBasPublicIP 'Microsoft.Network/publicIPAddresses@2023-05-01' = {
-  name: 'pip-hub-${parLocation}-bas-001'
+  name: 'pip-${parSpokeName}-${parLocation}-bas-001'
   location: parLocation
   sku: {
     name: 'Standard'
@@ -60,7 +60,7 @@ resource resBasPublicIP 'Microsoft.Network/publicIPAddresses@2023-05-01' = {
   }
 }
 // resource resBas 'Microsoft.Network/bastionHosts@2023-05-01' = {
-//   name: 'bas-hub-${parLocation}-001'
+//   name: 'bas-${parSpokeName}-${parLocation}-001'
 //   location: parLocation
 //   sku: {
 //     name: 'Basic'
@@ -85,7 +85,7 @@ resource resBasPublicIP 'Microsoft.Network/publicIPAddresses@2023-05-01' = {
 
 //Firewall + Firewall Policy + any/any Rule, + Firewall Public IP
 resource resAfwPublicIP 'Microsoft.Network/publicIPAddresses@2023-05-01' = {
-  name: 'pip-hub-${parLocation}-afw-001'
+  name: 'pip-${parSpokeName}-${parLocation}-afw-001'
   location: parLocation
   sku: {
     name: 'Standard'
@@ -143,7 +143,7 @@ resource resAfwPolicyRuleCollectionGroup 'Microsoft.Network/firewallPolicies/rul
   }
 }
 // resource resAfw 'Microsoft.Network/azureFirewalls@2023-05-01' = {
-//   name: 'afw-hub-${parLocation}-001'
+//   name: 'afw-${parSpokeName}-${parLocation}-001'
 //   location: parLocation
 //   properties: {
 //     sku: {
