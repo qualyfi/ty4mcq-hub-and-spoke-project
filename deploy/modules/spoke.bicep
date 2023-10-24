@@ -6,26 +6,25 @@ param parAppSubnetAddressPrefix string
 param parSqlSubnetAddressPrefix string
 param parStSubnetAddressPrefix string
 
-param parDefaultNsgName string
-param parRtName string
+param parSpokeName string
+
+param parDefaultNsgId string
+param parRtId string
 
 param parAspName string
 param parAspSkuName string
 
-param parAsName string
+param parWaName string
 param parLinuxFxVersion string
+
 
 param parRepoUrl string
 param parBranch string
 
-//Declaring Default NSG as resource to reference in Spoke VNet
-resource resDefaultNsg 'Microsoft.Network/networkSecurityGroups@2023-05-01' existing = {
-  name: parDefaultNsgName
-}
-//Declaring Route Table as resource to reference in Spoke VNet
-resource resRt 'Microsoft.Network/routeTables@2023-05-01' existing = {
-  name: parRtName
-}
+param parWaPeName string
+// param parWaPeNicName string
+param parWaPDnsZoneName string
+param parWaPDnsZoneId string
 
 //Spoke VNet
 resource resVnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
@@ -43,10 +42,10 @@ resource resVnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
         properties: {
           addressPrefix: parAppSubnetAddressPrefix
           networkSecurityGroup: {
-            id: resDefaultNsg.id
+            id: parDefaultNsgId
           }
           routeTable: {
-            id: resRt.id
+            id: parRtId
           }
         }
       }
@@ -55,10 +54,10 @@ resource resVnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
         properties: {
           addressPrefix: parSqlSubnetAddressPrefix
           networkSecurityGroup: {
-            id: resDefaultNsg.id
+            id: parDefaultNsgId
           }
           routeTable: {
-            id: resRt.id
+            id: parRtId
           }
         }
       }
@@ -67,18 +66,30 @@ resource resVnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
         properties: {
           addressPrefix: parStSubnetAddressPrefix
           networkSecurityGroup: {
-            id: resDefaultNsg.id
+            id: parDefaultNsgId
           }
           routeTable: {
-            id: resRt.id
+            id: parRtId
           }
         }
       }
     ]
   }
 }
-output outVnetName string = resVnet.name
 
+resource resWaPDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
+  name: '${parWaPDnsZoneName}/${parWaPDnsZoneName}-${parSpokeName}-link'
+  location: 'global'
+  properties: {
+    registrationEnabled: false
+    virtualNetwork: {
+      id: resVnet.id
+    }
+  }
+}
+
+
+//App Service Plan + Web App + Source Controls
 resource resAsp 'Microsoft.Web/serverfarms@2022-09-01' = {
   name: parAspName
   location: parLocation
@@ -90,9 +101,8 @@ resource resAsp 'Microsoft.Web/serverfarms@2022-09-01' = {
   }
   kind: 'linux'
 }
-
-resource resAs 'Microsoft.Web/sites@2022-09-01' = {
-  name: parAsName
+resource resWa 'Microsoft.Web/sites@2022-09-01' = {
+  name: parWaName
   location: parLocation
   properties: {
     serverFarmId: resAsp.id
@@ -105,10 +115,66 @@ resource resAs 'Microsoft.Web/sites@2022-09-01' = {
 
 resource resSrcControls 'Microsoft.Web/sites/sourcecontrols@2022-09-01' = {
   name: 'web'
-  parent: resAs
+  parent: resWa
   properties: {
     repoUrl: parRepoUrl
     branch: parBranch
     isManualIntegration: true
   }
 }
+output outWaName string = resWa.name
+
+resource resWaPe 'Microsoft.Network/privateEndpoints@2023-05-01' = {
+  name: parWaPeName
+  location: parLocation
+  properties: {
+    privateLinkServiceConnections: [
+      {
+        name: parWaPeName
+        properties: {
+          privateLinkServiceId: resWa.id
+          groupIds: [
+            'sites'
+          ]
+        }
+      }
+    ]
+    subnet: {
+      id: resVnet.properties.subnets[0].id
+    }
+  }
+}
+// resource resWaPeNic 'Microsoft.Network/networkInterfaces@2023-05-01' = {
+//   name: parWaPeNicName
+//   location: parLocation
+//   properties: {
+//     ipConfigurations: [
+//       {
+//         name: 'ipConfig'
+//         properties: {
+//           privateIPAllocationMethod: 'Dynamic'
+//           subnet: {
+//             id: resVnet.properties.subnets[0].id
+//           }
+//         }
+//       }
+//     ]
+//   }
+// }
+resource resWaPeDnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-05-01' = {
+  name: 'dnsGroupName'
+  parent: resWaPe
+  properties: {
+    privateDnsZoneConfigs: [
+      {
+        name: 'ipConfig'
+        properties: {
+          privateDnsZoneId: parWaPDnsZoneId
+        }
+      }
+    ]
+  }
+}
+
+output outVnetName string = resVnet.name
+output outVnetId string = resVnet.id

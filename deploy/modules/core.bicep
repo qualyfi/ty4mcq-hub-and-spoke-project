@@ -5,8 +5,8 @@ param parVnetAddressPrefix string
 param parVMSubnetAddressPrefix string
 param parKVSubnetAddressPrefix string
 
-param parDefaultNsgName string
-param parRtName string
+param parDefaultNsgId string
+param parRtId string
 
 param parVmSize string
 param parComputerName string
@@ -18,15 +18,6 @@ param parPublisher string
 param parOffer string
 param parSku string
 param parVersion string
-
-//Declaring Default NSG as resource to reference in Core VNet
-resource resDefaultNsg 'Microsoft.Network/networkSecurityGroups@2023-05-01' existing = {
-  name: parDefaultNsgName
-}
-//Declaring Route Table as resource to reference in Core VNet
-resource resRt 'Microsoft.Network/routeTables@2023-05-01' existing = {
-name: parRtName
-}
 
 //Core VNet
 resource resVnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
@@ -44,10 +35,10 @@ resource resVnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
         properties: {
           addressPrefix: parVMSubnetAddressPrefix
           networkSecurityGroup: {
-            id: resDefaultNsg.id
+            id: parDefaultNsgId
           }
           routeTable: {
-            id: resRt.id
+            id: parRtId
           }
         }
       }
@@ -56,10 +47,10 @@ resource resVnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
         properties: {
           addressPrefix: parKVSubnetAddressPrefix
           networkSecurityGroup: {
-            id: resDefaultNsg.id
+            id: parDefaultNsgId
           }
           routeTable: {
-            id: resRt.id
+            id: parRtId
           }
         }
       }
@@ -67,6 +58,7 @@ resource resVnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
   }
 }
 output outVnetName string = resVnet.name
+output outVnetId string = resVnet.id
 
 //VM + VM NIC + VM Extension
 resource resVm 'Microsoft.Compute/virtualMachines@2023-07-01' = {
