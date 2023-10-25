@@ -1,9 +1,10 @@
 param parLocation string = resourceGroup().location
 param parUtc string = utcNow()
-param parKeyVaultName string
+param parSecKeyVaultName string
+param parUserObjectId string
 
-resource resKv 'Microsoft.KeyVault/vaults@2023-02-01' existing = {
-  name: parKeyVaultName
+resource resSecKv 'Microsoft.KeyVault/vaults@2023-02-01' existing = {
+  name: parSecKeyVaultName
 }
 
 module modHub 'modules/hub.bicep' = {
@@ -20,6 +21,7 @@ module modHub 'modules/hub.bicep' = {
 
     parWaPDnsZoneName: modWaPDnsZone.outputs.outPDnsZoneName
     parSqlPDnsZoneName: modSqlPDnsZone.outputs.outPDnsZoneName
+    parKvPDnsZoneName: modKvPDnsZone.outputs.outPDnsZoneName
   }
 }
 
@@ -34,6 +36,7 @@ module modCore 'modules/core.bicep' = {
     parKVSubnetAddressPrefix: '10.20.2.0/24'
     parWaPDnsZoneName: modWaPDnsZone.outputs.outPDnsZoneName
     parSqlPDnsZoneName: modSqlPDnsZone.outputs.outPDnsZoneName
+    parKvPDnsZoneName: modKvPDnsZone.outputs.outPDnsZoneName
 
     parDefaultNsgId: modDefaultNsg.outputs.outDefaultNsgId
     parRtId: modRt.outputs.outRtId
@@ -41,13 +44,18 @@ module modCore 'modules/core.bicep' = {
     parVmSize: 'Standard_D2S_v3'
     
     parComputerName: 'vm1core001'
-    parAdminUsername: resKv.getSecret('vmAdminUsername')
-    parAdminPassword: resKv.getSecret('vmAdminPassword')
+    parVmAdminUsername: resSecKv.getSecret('vmAdminUsername')
+    parVmAdminPassword: resSecKv.getSecret('vmAdminPassword')
     
     parPublisher: 'MicrosoftWindowsServer'
     parOffer: 'WindowsServer'
     parSku: '2022-datacenter-azure-edition'
     parVersion: 'latest'
+
+    parTenantId: subscription().tenantId
+    parUserObjectId: parUserObjectId
+
+    parKvPDnsZoneId: modKvPDnsZone.outputs.outPDnsZoneId
   }
 }
 
@@ -73,11 +81,14 @@ module modSpokeDev 'modules/spoke.bicep' = {
     parRepoUrl: 'https://github.com/Azure-Samples/dotnetcore-docs-hello-world'
     parBranch: 'master'
 
+    parSqlAdminUsername: resSecKv.getSecret('sqlAdminUsername')
+    parSqlAdminPassword: resSecKv.getSecret('sqlAdminPassword')
+
     parWaPDnsZoneName: modWaPDnsZone.outputs.outPDnsZoneName
     parWaPDnsZoneId: modWaPDnsZone.outputs.outPDnsZoneId
-
     parSqlPDnsZoneName: modSqlPDnsZone.outputs.outPDnsZoneName
     parSqlPDnsZoneId: modSqlPDnsZone.outputs.outPDnsZoneId
+    parKvPDnsZoneName: modKvPDnsZone.outputs.outPDnsZoneName
   }
 }
 
@@ -104,10 +115,14 @@ module modSpokeProd 'modules/spoke.bicep' = {
     parRepoUrl: 'https://github.com/Azure-Samples/dotnetcore-docs-hello-world'
     parBranch: 'master'
 
+    parSqlAdminUsername: resSecKv.getSecret('sqlAdminUsername')
+    parSqlAdminPassword: resSecKv.getSecret('sqlAdminPassword')
+
     parWaPDnsZoneName: modWaPDnsZone.outputs.outPDnsZoneName
     parWaPDnsZoneId: modWaPDnsZone.outputs.outPDnsZoneId
     parSqlPDnsZoneName: modSqlPDnsZone.outputs.outPDnsZoneName
     parSqlPDnsZoneId: modSqlPDnsZone.outputs.outPDnsZoneId
+    parKvPDnsZoneName: modKvPDnsZone.outputs.outPDnsZoneName
   }
 }
 
@@ -186,6 +201,12 @@ module modSqlPDnsZone 'modules/privatednszone.bicep' = {
   name: 'sqlPDnsZone'
   params: {
     privateDnsZoneName: 'privatelink${environment().suffixes.sqlServerHostname}'
+  }
+}
+module modKvPDnsZone 'modules/privatednszone.bicep' = {
+  name: 'kvPDnsZone'
+  params: {
+    privateDnsZoneName: 'privatelink${environment().suffixes.keyvaultDns}'
   }
 }
 module modAppGw 'modules/appgw.bicep' = {

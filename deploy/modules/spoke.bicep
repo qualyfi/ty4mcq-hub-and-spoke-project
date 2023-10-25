@@ -16,15 +16,19 @@ param parAspSkuName string
 
 param parLinuxFxVersion string
 
-
 param parRepoUrl string
 param parBranch string
 
+@secure()
+param parSqlAdminUsername string
+@secure()
+param parSqlAdminPassword string
+
 param parWaPDnsZoneName string
 param parWaPDnsZoneId string
-
 param parSqlPDnsZoneName string
 param parSqlPDnsZoneId string
+param parKvPDnsZoneName string
 
 //Spoke VNet + Private DNS Zone Link
 resource resVnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
@@ -88,6 +92,16 @@ resource resWaPDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLink
 }
 resource resSqlPDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
   name: '${parSqlPDnsZoneName}/${parSqlPDnsZoneName}-${parSpokeName}-link'
+  location: 'global'
+  properties: {
+    registrationEnabled: false
+    virtualNetwork: {
+      id: resVnet.id
+    }
+  }
+}
+resource resKvPDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
+  name: '${parKvPDnsZoneName}/${parKvPDnsZoneName}-${parSpokeName}-link'
   location: 'global'
   properties: {
     registrationEnabled: false
@@ -188,8 +202,8 @@ resource resSqlServer 'Microsoft.Sql/servers@2021-11-01' ={
   name: 'sql-${parSpokeName}-${parLocation}-001-${uniqueString(parUtc)}'
   location: parLocation
   properties: {
-    administratorLogin: 'ty4mcq'
-    administratorLoginPassword: 'QualyfiProject4921!'
+    administratorLogin: parSqlAdminUsername
+    administratorLoginPassword: parSqlAdminPassword
     publicNetworkAccess: 'Disabled'
   }
 }

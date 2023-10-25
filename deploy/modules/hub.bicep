@@ -9,6 +9,7 @@ param parAzureBastionSubnetAddressPrefix string
 
 param parWaPDnsZoneName string
 param parSqlPDnsZoneName string
+param parKvPDnsZoneName string
 
 //Hub VNet
 resource resVnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
@@ -60,6 +61,16 @@ resource resWaPDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLink
 }
 resource resSqlPDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
   name: '${parSqlPDnsZoneName}/${parSqlPDnsZoneName}-${parSpokeName}-link'
+  location: 'global'
+  properties: {
+    registrationEnabled: false
+    virtualNetwork: {
+      id: resVnet.id
+    }
+  }
+}
+resource resKvPDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
+  name: '${parKvPDnsZoneName}/${parKvPDnsZoneName}-${parSpokeName}-link'
   location: 'global'
   properties: {
     registrationEnabled: false

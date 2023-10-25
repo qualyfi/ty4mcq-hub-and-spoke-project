@@ -7,6 +7,7 @@ param parKVSubnetAddressPrefix string
 
 param parWaPDnsZoneName string
 param parSqlPDnsZoneName string
+param parKvPDnsZoneName string
 
 param parDefaultNsgId string
 param parRtId string
@@ -14,13 +15,18 @@ param parRtId string
 param parVmSize string
 param parComputerName string
 @secure()
-param parAdminUsername string
+param parVmAdminUsername string
 @secure()
-param parAdminPassword string
+param parVmAdminPassword string
 param parPublisher string
 param parOffer string
 param parSku string
 param parVersion string
+
+param parTenantId string
+param parUserObjectId string
+
+param parKvPDnsZoneId string
 
 //Core VNet + Web App/SQL Private DNS Zone Link
 resource resVnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
@@ -80,6 +86,16 @@ resource resSqlPDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLin
     }
   }
 }
+resource resKvPDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
+  name: '${parKvPDnsZoneName}/${parKvPDnsZoneName}-${parSpokeName}-link'
+  location: 'global'
+  properties: {
+    registrationEnabled: false
+    virtualNetwork: {
+      id: resVnet.id
+    }
+  }
+}
 
 
 //VM + VM NIC + VM Extension
@@ -92,8 +108,8 @@ resource resVm 'Microsoft.Compute/virtualMachines@2023-07-01' = {
     }
     osProfile: {
       computerName: parComputerName
-      adminUsername: parAdminUsername
-      adminPassword: parAdminPassword
+      adminUsername: parVmAdminUsername
+      adminPassword: parVmAdminPassword
     }
     storageProfile: {
       imageReference: {
@@ -146,6 +162,89 @@ resource resVmExtension 'Microsoft.Compute/virtualMachines/extensions@2023-07-01
     settings: {
       AntimalwareEnabled: 'true'
     }
+  }
+}
+
+//Disk Encryption Key Vault
+resource resKv 'Microsoft.KeyVault/vaults@2023-02-01' = {
+  name: 'kv-encrypt-${parSpokeName}-pfe40536'
+  location: parLocation
+  properties: {
+    enabledForDeployment: false
+    enabledForTemplateDeployment: false
+    enabledForDiskEncryption: true
+    publicNetworkAccess: 'Disabled'
+    tenantId: parTenantId
+    accessPolicies: [
+      {
+        tenantId: parTenantId
+        objectId: parUserObjectId
+        permissions: {
+          keys: [
+            'all'
+          ]
+          secrets: [
+            'list'
+            'get'
+          ]
+        }
+      }
+    ]
+    sku: {
+      name: 'standard'
+      family: 'A'
+    }
+  }
+}
+resource resKvPe 'Microsoft.Network/privateEndpoints@2023-05-01' = {
+  name: 'pe-${parSpokeName}-${parLocation}-kv-001'
+  location: parLocation
+  properties: {
+    privateLinkServiceConnections: [
+      {
+        name: 'pe-${parSpokeName}-${parLocation}-kv-001'
+        properties: {
+          privateLinkServiceId: resKv.id
+          groupIds: [
+            'vault'
+          ]
+        }
+      }
+    ]
+    subnet: {
+      id: resVnet.properties.subnets[1].id
+    }
+  }
+}
+resource resKvPeNic 'Microsoft.Network/networkInterfaces@2023-05-01' = {
+  name: 'nic-${parSpokeName}-${parLocation}-kv-001'
+  location: parLocation
+  properties: {
+    ipConfigurations: [
+      {
+        name: 'ipConfig'
+        properties: {
+          privateIPAllocationMethod: 'Dynamic'
+          subnet: {
+            id: resVnet.properties.subnets[1].id
+          }
+        }
+      }
+    ]
+  }
+}
+resource resKvPeDnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-05-01' = {
+  name: 'kvDnsGroupName'
+  parent: resKvPe
+  properties: {
+    privateDnsZoneConfigs: [
+      {
+        name: 'ipConfig'
+        properties: {
+          privateDnsZoneId: parKvPDnsZoneId
+        }
+      }
+    ]
   }
 }
 

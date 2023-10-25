@@ -1,3 +1,5 @@
+Connect-AzAccount
+
 $resourceGroup = Get-AzResourceGroup
 $resourceGroupName = $resourceGroup.ResourceGroupName
 $resourceGroupLocation = $resourceGroup.Location
@@ -9,8 +11,14 @@ $keyVaultName = -join('kv-secret-core-',(Get-Random -Maximum 999999999))
 $vmAdminUsername = ConvertTo-SecureString -String $randUser -AsPlainText -Force
 $vmAdminPassword = ConvertTo-SecureString -String $randPass -AsPlainText -Force
 
+$sqlAdminUsername = ConvertTo-SecureString -String $randUser -AsPlainText -Force
+$sqlAdminPassword = ConvertTo-SecureString -String $randPass -AsPlainText -Force
+
+
 New-AzKeyVault -Name $keyVaultName -ResourceGroupName $resourceGroupName -Location $resourceGroupLocation -EnabledForTemplateDeployment
 Set-AzKeyVaultSecret -VaultName $keyVaultName -Name 'vmAdminUsername' -SecretValue $vmAdminUsername
 Set-AzKeyVaultSecret -VaultName $keyVaultName -Name 'vmAdminPassword' -SecretValue $vmAdminPassword
+Set-AzKeyVaultSecret -VaultName $keyVaultName -Name 'sqlAdminUsername' -SecretValue $sqlAdminUsername
+Set-AzKeyVaultSecret -VaultName $keyVaultName -Name 'sqlAdminPassword' -SecretValue $sqlAdminPassword
 
-New-AzResourceGroupDeployment -ResourceGroupName $resourceGroupName -TemplateFile '.\deploy\main.bicep' -parKeyVaultName $keyVaultName
+New-AzResourceGroupDeployment -ResourceGroupName $resourceGroupName -TemplateFile '.\deploy\main.bicep' -parSecKeyVaultName $keyVaultName -parUserObjectId (Get-AzADUser -UserPrincipalName (Get-AzContext).Account).Id
