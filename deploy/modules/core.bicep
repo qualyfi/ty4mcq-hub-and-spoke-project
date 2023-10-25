@@ -23,6 +23,8 @@ param parOffer string
 param parSku string
 param parVersion string
 
+param parUtc string
+var varGuidSuffix = substring(uniqueString(parUtc), 1, 8)
 param parTenantId string
 param parUserObjectId string
 
@@ -166,8 +168,8 @@ resource resVmExtension 'Microsoft.Compute/virtualMachines/extensions@2023-07-01
 }
 
 //Disk Encryption Key Vault
-resource resKv 'Microsoft.KeyVault/vaults@2023-02-01' = {
-  name: 'kv-encrypt-${parSpokeName}-pfe40536'
+resource resEncryptKv 'Microsoft.KeyVault/vaults@2023-02-01' = {
+  name: 'kv-encrypt-${parSpokeName}-${varGuidSuffix}'
   location: parLocation
   properties: {
     enabledForDeployment: false
@@ -204,7 +206,7 @@ resource resKvPe 'Microsoft.Network/privateEndpoints@2023-05-01' = {
       {
         name: 'pe-${parSpokeName}-${parLocation}-kv-001'
         properties: {
-          privateLinkServiceId: resKv.id
+          privateLinkServiceId: resEncryptKv.id
           groupIds: [
             'vault'
           ]
