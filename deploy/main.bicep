@@ -19,9 +19,7 @@ module modHub 'modules/hub.bicep' = {
     parAzureBastionSubnetAddressPrefix: '10.10.4.0/24'
 
     parWaPDnsZoneName: modWaPDnsZone.outputs.outPDnsZoneName
-
-    parAgwName: 'agw-hub-${parLocation}-001'
-    parProdWaFqdn: modSpokeProd.outputs.outWaFqdn
+    parSqlPDnsZoneName: modSqlPDnsZone.outputs.outPDnsZoneName
   }
 }
 
@@ -35,6 +33,7 @@ module modCore 'modules/core.bicep' = {
     parVMSubnetAddressPrefix: '10.20.1.0/24'
     parKVSubnetAddressPrefix: '10.20.2.0/24'
     parWaPDnsZoneName: modWaPDnsZone.outputs.outPDnsZoneName
+    parSqlPDnsZoneName: modSqlPDnsZone.outputs.outPDnsZoneName
 
     parDefaultNsgId: modDefaultNsg.outputs.outDefaultNsgId
     parRtId: modRt.outputs.outRtId
@@ -76,6 +75,9 @@ module modSpokeDev 'modules/spoke.bicep' = {
 
     parWaPDnsZoneName: modWaPDnsZone.outputs.outPDnsZoneName
     parWaPDnsZoneId: modWaPDnsZone.outputs.outPDnsZoneId
+
+    parSqlPDnsZoneName: modSqlPDnsZone.outputs.outPDnsZoneName
+    parSqlPDnsZoneId: modSqlPDnsZone.outputs.outPDnsZoneId
   }
 }
 
@@ -104,6 +106,8 @@ module modSpokeProd 'modules/spoke.bicep' = {
 
     parWaPDnsZoneName: modWaPDnsZone.outputs.outPDnsZoneName
     parWaPDnsZoneId: modWaPDnsZone.outputs.outPDnsZoneId
+    parSqlPDnsZoneName: modSqlPDnsZone.outputs.outPDnsZoneName
+    parSqlPDnsZoneId: modSqlPDnsZone.outputs.outPDnsZoneId
   }
 }
 
@@ -167,9 +171,8 @@ module modRt 'modules/rt.bicep' = {
   name: 'rt'
   params: {
     parLocation: parLocation
-    parAfwIpAddress: '10.30.3.4'
-    // parAfwIpAddress: modHub.outputs.outAfwIpAddress
-
+    // parAfwIpAddress: '10.30.3.4'
+    parAfwIpAddress: modHub.outputs.outAfwIpAddress
   }
 }
 
@@ -177,5 +180,21 @@ module modWaPDnsZone 'modules/privatednszone.bicep' = {
   name: 'waPDnsZone'
   params: {
     privateDnsZoneName: 'privatelink.azurewebsites.net'
+  }
+}
+module modSqlPDnsZone 'modules/privatednszone.bicep' = {
+  name: 'sqlPDnsZone'
+  params: {
+    privateDnsZoneName: 'privatelink${environment().suffixes.sqlServerHostname}'
+  }
+}
+module modAppGw 'modules/appgw.bicep' = {
+  name: 'appGw'
+  params: {
+    parLocation: parLocation
+    parSpokeName: 'hub'
+    parAgwName: 'agw-hub-${parLocation}-001'
+    parAgwSubnetId: modHub.outputs.outAppGwSubnetId
+    parProdWaFqdn: modSpokeProd.outputs.outWaFqdn
   }
 }

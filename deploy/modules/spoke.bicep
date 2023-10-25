@@ -23,7 +23,10 @@ param parBranch string
 param parWaPDnsZoneName string
 param parWaPDnsZoneId string
 
-//Spoke VNet
+param parSqlPDnsZoneName string
+param parSqlPDnsZoneId string
+
+//Spoke VNet + Private DNS Zone Link
 resource resVnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
   name: 'vnet-${parSpokeName}-${parLocation}-001'
   location: parLocation
@@ -73,9 +76,18 @@ resource resVnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
     ]
   }
 }
-
 resource resWaPDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
   name: '${parWaPDnsZoneName}/${parWaPDnsZoneName}-${parSpokeName}-link'
+  location: 'global'
+  properties: {
+    registrationEnabled: false
+    virtualNetwork: {
+      id: resVnet.id
+    }
+  }
+}
+resource resSqlPDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
+  name: '${parSqlPDnsZoneName}/${parSqlPDnsZoneName}-${parSpokeName}-link'
   location: 'global'
   properties: {
     registrationEnabled: false
@@ -108,7 +120,6 @@ resource resWa 'Microsoft.Web/sites@2022-09-01' = {
     }
   }
 }
-
 resource resSrcControls 'Microsoft.Web/sites/sourcecontrols@2022-09-01' = {
   name: 'web'
   parent: resWa
@@ -119,6 +130,7 @@ resource resSrcControls 'Microsoft.Web/sites/sourcecontrols@2022-09-01' = {
   }
 }
 
+//Web App Private Endpoint + Private Endpoint NIC + Private Endpoint DNS Group
 resource resWaPe 'Microsoft.Network/privateEndpoints@2023-05-01' = {
   name: 'pe-${parSpokeName}-${parLocation}-wa-001'
   location: parLocation
@@ -157,7 +169,7 @@ resource resWaPeNic 'Microsoft.Network/networkInterfaces@2023-05-01' = {
   }
 }
 resource resWaPeDnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-05-01' = {
-  name: 'dnsGroupName'
+  name: 'waDnsGroupName'
   parent: resWaPe
   properties: {
     privateDnsZoneConfigs: [
@@ -170,6 +182,80 @@ resource resWaPeDnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroup
     ]
   }
 }
+
+//SQL Server + Database
+resource resSqlServer 'Microsoft.Sql/servers@2021-11-01' ={
+  name: 'sql-${parSpokeName}-${parLocation}-001-${uniqueString(parUtc)}'
+  location: parLocation
+  properties: {
+    administratorLogin: 'ty4mcq'
+    administratorLoginPassword: 'QualyfiProject4921!'
+    publicNetworkAccess: 'Disabled'
+  }
+}
+resource resSqlDb 'Microsoft.Sql/servers/databases@2021-11-01' = {
+  parent: resSqlServer
+  name: 'sqldb-${parSpokeName}-${parLocation}-001'
+  location: parLocation
+  sku: {
+    name: 'Basic'
+    tier: 'Basic'
+  }
+}
+
+//SQL Private Endpoint + Private Endpoint NIC + Private Endpoint DNS Group
+resource resSqlPe 'Microsoft.Network/privateEndpoints@2023-05-01' = {
+  name: 'pe-${parSpokeName}-${parLocation}-sql-001'
+  location: parLocation
+  properties: {
+    privateLinkServiceConnections: [
+      {
+        name: 'pe-${parSpokeName}-${parLocation}-sql-001'
+        properties: {
+          privateLinkServiceId: resSqlServer.id
+          groupIds: [
+            'sqlServer'
+          ]
+        }
+      }
+    ]
+    subnet: {
+      id: resVnet.properties.subnets[1].id
+    }
+  }
+}
+resource resSqlPeNic 'Microsoft.Network/networkInterfaces@2023-05-01' = {
+  name: 'nic-${parSpokeName}-${parLocation}-sql-001'
+  location: parLocation
+  properties: {
+    ipConfigurations: [
+      {
+        name: 'ipConfig'
+        properties: {
+          privateIPAllocationMethod: 'Dynamic'
+          subnet: {
+            id: resVnet.properties.subnets[1].id
+          }
+        }
+      }
+    ]
+  }
+}
+resource resSqlPeDnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-05-01' = {
+  name: 'sqlDnsGroupName'
+  parent: resSqlPe
+  properties: {
+    privateDnsZoneConfigs: [
+      {
+        name: 'ipConfig'
+        properties: {
+          privateDnsZoneId: parSqlPDnsZoneId
+        }
+      }
+    ]
+  }
+}
+
 
 output outVnetName string = resVnet.name
 output outVnetId string = resVnet.id

@@ -6,6 +6,7 @@ param parVMSubnetAddressPrefix string
 param parKVSubnetAddressPrefix string
 
 param parWaPDnsZoneName string
+param parSqlPDnsZoneName string
 
 param parDefaultNsgId string
 param parRtId string
@@ -21,7 +22,7 @@ param parOffer string
 param parSku string
 param parVersion string
 
-//Core VNet
+//Core VNet + Web App/SQL Private DNS Zone Link
 resource resVnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
   name: 'vnet-${parSpokeName}-${parLocation}-001'
   location: parLocation
@@ -61,6 +62,16 @@ resource resVnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
 }
 resource resWaPDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
   name: '${parWaPDnsZoneName}/${parWaPDnsZoneName}-${parSpokeName}-link'
+  location: 'global'
+  properties: {
+    registrationEnabled: false
+    virtualNetwork: {
+      id: resVnet.id
+    }
+  }
+}
+resource resSqlPDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
+  name: '${parSqlPDnsZoneName}/${parSqlPDnsZoneName}-${parSpokeName}-link'
   location: 'global'
   properties: {
     registrationEnabled: false
