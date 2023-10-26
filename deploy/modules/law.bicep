@@ -5,11 +5,6 @@ param parGuidSuffix string
 resource resLaw 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
   name: 'law-core-${parLocation}-001-${parGuidSuffix}'
   location: parLocation
-  properties: {
-    sku: {
-      name: 'Free'
-    }
-  }
 }
 
 output outLawId string = resLaw.id

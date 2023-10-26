@@ -11,7 +11,7 @@ param parWaPDnsZoneName string
 param parSqlPDnsZoneName string
 param parKvPDnsZoneName string
 
-param parLawId string
+// param parLawId string
 
 //Hub VNet
 resource resVnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
@@ -200,13 +200,6 @@ resource resAfw 'Microsoft.Network/azureFirewalls@2023-05-01' = {
         }
       }
     ]
-  }
-}
-resource resAfwDs 'Microsoft.Insights/diagnosticSettings@2016-09-01' = {
-  name: resAfw.name
-  scope: resAfw
-  properties: {
-    workspaceId: parLawId
   }
 }
 

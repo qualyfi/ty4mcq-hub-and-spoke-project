@@ -24,7 +24,7 @@ module modHub 'modules/hub.bicep' = {
     parSqlPDnsZoneName: modSqlPDnsZone.outputs.outPDnsZoneName
     parKvPDnsZoneName: modKvPDnsZone.outputs.outPDnsZoneName
 
-    parLawId: modLaw.outputs.outLawId
+    // parLawId: modLaw.outputs.outLawId
   }
 }
 
@@ -224,10 +224,10 @@ module modAppGw 'modules/appgw.bicep' = {
   }
 }
 
-module modLaw 'modules/law.bicep' = {
-  name: 'law'
-  params: {
-    parLocation: parLocation
-    parGuidSuffix: varGuidSuffix
-  }
-}
+// module modLaw 'modules/law.bicep' = {
+//   name: 'law'
+//   params: {
+//     parLocation: parLocation
+//     parGuidSuffix: varGuidSuffix
+//   }
+// }
