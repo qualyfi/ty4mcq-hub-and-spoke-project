@@ -9,9 +9,10 @@ param parAzureBastionSubnetAddressPrefix string
 
 param parWaPDnsZoneName string
 param parSqlPDnsZoneName string
+param parSaPDnsZoneName string
 param parKvPDnsZoneName string
 
-// param parLawId string
+param parLawId string
 
 //Hub VNet
 resource resVnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
@@ -71,6 +72,16 @@ resource resSqlPDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLin
     }
   }
 }
+resource resSaPDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
+  name: '${parSaPDnsZoneName}/${parSaPDnsZoneName}-${parSpokeName}-link'
+  location: 'global'
+  properties: {
+    registrationEnabled: false
+    virtualNetwork: {
+      id: resVnet.id
+    }
+  }
+}
 resource resKvPDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
   name: '${parKvPDnsZoneName}/${parKvPDnsZoneName}-${parSpokeName}-link'
   location: 'global'
@@ -93,29 +104,29 @@ resource resBasPublicIP 'Microsoft.Network/publicIPAddresses@2023-05-01' = {
     publicIPAllocationMethod: 'Static'
   }
 }
-// resource resBas 'Microsoft.Network/bastionHosts@2023-05-01' = {
-//   name: 'bas-${parSpokeName}-${parLocation}-001'
-//   location: parLocation
-//   sku: {
-//     name: 'Basic'
-//   }
-//   properties: {
-//     ipConfigurations: [
-//       {
-//         name: 'ipConfig'
-//         properties: {
-//           privateIPAllocationMethod:'Dynamic'
-//           publicIPAddress: {
-//             id: resBasPublicIP.id
-//           }
-//           subnet: {
-//             id: resVnet.properties.subnets[3].id
-//           }
-//         }
-//       }
-//     ]
-//   }
-// }
+resource resBas 'Microsoft.Network/bastionHosts@2023-05-01' = {
+  name: 'bas-${parSpokeName}-${parLocation}-001'
+  location: parLocation
+  sku: {
+    name: 'Basic'
+  }
+  properties: {
+    ipConfigurations: [
+      {
+        name: 'ipConfig'
+        properties: {
+          privateIPAllocationMethod:'Dynamic'
+          publicIPAddress: {
+            id: resBasPublicIP.id
+          }
+          subnet: {
+            id: resVnet.properties.subnets[3].id
+          }
+        }
+      }
+    ]
+  }
+}
 
 //Firewall + Firewall Policy + any/any Rule, + Firewall Public IP
 resource resAfwPublicIP 'Microsoft.Network/publicIPAddresses@2023-05-01' = {
@@ -203,7 +214,25 @@ resource resAfw 'Microsoft.Network/azureFirewalls@2023-05-01' = {
   }
 }
 
-
+resource resAfwDs 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: 'ds-${resAfw.name}'
+  scope: resAfw
+  properties: {
+    workspaceId: parLawId
+    logs: [
+      {
+        categoryGroup: 'allLogs'
+        enabled: true
+      }
+    ]
+    metrics: [
+      {
+        category: 'AllMetrics'
+        enabled: true
+      }
+    ]
+  }
+}
 
 output outVnetName string = resVnet.name
 output outVnetId string = resVnet.id

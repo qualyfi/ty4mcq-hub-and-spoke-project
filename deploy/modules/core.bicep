@@ -7,6 +7,7 @@ param parKVSubnetAddressPrefix string
 
 param parWaPDnsZoneName string
 param parSqlPDnsZoneName string
+param parSaPDnsZoneName string
 param parKvPDnsZoneName string
 param parKvPDnsZoneId string
 
@@ -79,6 +80,16 @@ resource resWaPDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLink
 }
 resource resSqlPDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
   name: '${parSqlPDnsZoneName}/${parSqlPDnsZoneName}-${parSpokeName}-link'
+  location: 'global'
+  properties: {
+    registrationEnabled: false
+    virtualNetwork: {
+      id: resVnet.id
+    }
+  }
+}
+resource resSaPDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
+  name: '${parSaPDnsZoneName}/${parSaPDnsZoneName}-${parSpokeName}-link'
   location: 'global'
   properties: {
     registrationEnabled: false
@@ -230,11 +241,6 @@ resource resEncryptKvPe 'Microsoft.Network/privateEndpoints@2023-05-01' = {
           groupIds: [
             'vault'
           ]
-          privateLinkServiceConnectionState: {
-            status: 'Approved'
-            description: 'Auto-Approved'
-            actionsRequired: 'None'
-          }
         }
       }
     ]

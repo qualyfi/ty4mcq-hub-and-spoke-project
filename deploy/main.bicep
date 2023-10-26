@@ -22,9 +22,10 @@ module modHub 'modules/hub.bicep' = {
 
     parWaPDnsZoneName: modWaPDnsZone.outputs.outPDnsZoneName
     parSqlPDnsZoneName: modSqlPDnsZone.outputs.outPDnsZoneName
+    parSaPDnsZoneName: modSaPDnsZone.outputs.outPDnsZoneName
     parKvPDnsZoneName: modKvPDnsZone.outputs.outPDnsZoneName
 
-    // parLawId: modLaw.outputs.outLawId
+    parLawId: modLaw.outputs.outLawId
   }
 }
 
@@ -39,6 +40,7 @@ module modCore 'modules/core.bicep' = {
     parKVSubnetAddressPrefix: '10.20.2.0/24'
     parWaPDnsZoneName: modWaPDnsZone.outputs.outPDnsZoneName
     parSqlPDnsZoneName: modSqlPDnsZone.outputs.outPDnsZoneName
+    parSaPDnsZoneName: modSaPDnsZone.outputs.outPDnsZoneName
     parKvPDnsZoneName: modKvPDnsZone.outputs.outPDnsZoneName
     parKvPDnsZoneId: modKvPDnsZone.outputs.outPDnsZoneId
 
@@ -88,10 +90,14 @@ module modSpokeDev 'modules/spoke.bicep' = {
     parSqlAdminUsername: resSecKv.getSecret('sqlAdminUsername')
     parSqlAdminPassword: resSecKv.getSecret('sqlAdminPassword')
 
+    parGuidSuffix: varGuidSuffix
+
     parWaPDnsZoneName: modWaPDnsZone.outputs.outPDnsZoneName
     parWaPDnsZoneId: modWaPDnsZone.outputs.outPDnsZoneId
     parSqlPDnsZoneName: modSqlPDnsZone.outputs.outPDnsZoneName
     parSqlPDnsZoneId: modSqlPDnsZone.outputs.outPDnsZoneId
+    parSaPDnsZoneName: modSaPDnsZone.outputs.outPDnsZoneName
+    parSaPDnsZoneId: modSaPDnsZone.outputs.outPDnsZoneId
     parKvPDnsZoneName: modKvPDnsZone.outputs.outPDnsZoneName
   }
 }
@@ -122,10 +128,14 @@ module modSpokeProd 'modules/spoke.bicep' = {
     parSqlAdminUsername: resSecKv.getSecret('sqlAdminUsername')
     parSqlAdminPassword: resSecKv.getSecret('sqlAdminPassword')
 
+    parGuidSuffix: varGuidSuffix
+
     parWaPDnsZoneName: modWaPDnsZone.outputs.outPDnsZoneName
     parWaPDnsZoneId: modWaPDnsZone.outputs.outPDnsZoneId
     parSqlPDnsZoneName: modSqlPDnsZone.outputs.outPDnsZoneName
     parSqlPDnsZoneId: modSqlPDnsZone.outputs.outPDnsZoneId
+    parSaPDnsZoneName: modSaPDnsZone.outputs.outPDnsZoneName
+    parSaPDnsZoneId: modSaPDnsZone.outputs.outPDnsZoneId
     parKvPDnsZoneName: modKvPDnsZone.outputs.outPDnsZoneName
   }
 }
@@ -207,12 +217,19 @@ module modSqlPDnsZone 'modules/privatednszone.bicep' = {
     privateDnsZoneName: 'privatelink${environment().suffixes.sqlServerHostname}'
   }
 }
+module modSaPDnsZone 'modules/privatednszone.bicep' = {
+  name: 'saPDnsZone'
+  params: {
+    privateDnsZoneName: 'privatelink.blob.${environment().suffixes.storage}'
+  }
+}
 module modKvPDnsZone 'modules/privatednszone.bicep' = {
   name: 'kvPDnsZone'
   params: {
     privateDnsZoneName: 'privatelink${environment().suffixes.keyvaultDns}'
   }
 }
+
 module modAppGw 'modules/appgw.bicep' = {
   name: 'appGw'
   params: {
@@ -224,10 +241,11 @@ module modAppGw 'modules/appgw.bicep' = {
   }
 }
 
-// module modLaw 'modules/law.bicep' = {
-//   name: 'law'
-//   params: {
-//     parLocation: parLocation
-//     parGuidSuffix: varGuidSuffix
-//   }
-// }
+
+module modLaw 'modules/law.bicep' = {
+  name: 'law'
+  params: {
+    parLocation: parLocation
+    parGuidSuffix: varGuidSuffix
+  }
+}

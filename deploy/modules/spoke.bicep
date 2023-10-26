@@ -24,10 +24,14 @@ param parSqlAdminUsername string
 @secure()
 param parSqlAdminPassword string
 
+param parGuidSuffix string
+
 param parWaPDnsZoneName string
 param parWaPDnsZoneId string
 param parSqlPDnsZoneName string
 param parSqlPDnsZoneId string
+param parSaPDnsZoneName string
+param parSaPDnsZoneId string
 param parKvPDnsZoneName string
 
 //Spoke VNet + Private DNS Zone Link
@@ -100,6 +104,16 @@ resource resSqlPDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLin
     }
   }
 }
+resource resSaPDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
+  name: '${parSaPDnsZoneName}/${parSaPDnsZoneName}-${parSpokeName}-link'
+  location: 'global'
+  properties: {
+    registrationEnabled: false
+    virtualNetwork: {
+      id: resVnet.id
+    }
+  }
+}
 resource resKvPDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
   name: '${parKvPDnsZoneName}/${parKvPDnsZoneName}-${parSpokeName}-link'
   location: 'global'
@@ -157,11 +171,6 @@ resource resWaPe 'Microsoft.Network/privateEndpoints@2023-05-01' = {
           groupIds: [
             'sites'
           ]
-          privateLinkServiceConnectionState: {
-            status: 'Approved'
-            description: 'Auto-Approved'
-            actionsRequired: 'None'
-          }
         }
       }
     ]
@@ -235,11 +244,6 @@ resource resSqlPe 'Microsoft.Network/privateEndpoints@2023-05-01' = {
           groupIds: [
             'sqlServer'
           ]
-          privateLinkServiceConnectionState: {
-            status: 'Approved'
-            description: 'Auto-Approved'
-            actionsRequired: 'None'
-          }
         }
       }
     ]
@@ -280,6 +284,71 @@ resource resSqlPeDnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGrou
   }
 }
 
+//Storage Account
+resource resSa 'Microsoft.Storage/storageAccounts@2023-01-01' = {
+  name: 'st${parSpokeName}001${parGuidSuffix}'
+  location: parLocation
+  kind: 'StorageV2'
+  sku: {
+    name: 'Standard_LRS'
+  }
+  properties: {
+    publicNetworkAccess: 'Disabled'
+  }
+}
+
+//Storage Account Private Endpoint + Private Endpoint NIC + Private Endpoint DNS Group
+resource resSaPe 'Microsoft.Network/privateEndpoints@2023-05-01' = {
+  name: 'pe-${parSpokeName}-${parLocation}-sa-001'
+  location: parLocation
+  properties: {
+    privateLinkServiceConnections: [
+      {
+        name: 'pe-${parSpokeName}-${parLocation}-sa-001'
+        properties: {
+          privateLinkServiceId: resSa.id
+          groupIds: [
+            'blob'
+          ]
+        }
+      }
+    ]
+    subnet: {
+      id: resVnet.properties.subnets[2].id
+    }
+  }
+}
+resource resSaPeNic 'Microsoft.Network/networkInterfaces@2023-05-01' = {
+  name: 'nic-${parSpokeName}-${parLocation}-sa-001'
+  location: parLocation
+  properties: {
+    ipConfigurations: [
+      {
+        name: 'ipConfig'
+        properties: {
+          privateIPAllocationMethod: 'Dynamic'
+          subnet: {
+            id: resVnet.properties.subnets[2].id
+          }
+        }
+      }
+    ]
+  }
+}
+resource resSaPeDnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-05-01' = {
+  name: 'saPeDnsGroup'
+  parent: resSaPe
+  properties: {
+    privateDnsZoneConfigs: [
+      {
+        name: 'saPeDnsGroupConfig'
+        properties: {
+          privateDnsZoneId: parSaPDnsZoneId
+        }
+      }
+    ]
+  }
+}
 
 output outVnetName string = resVnet.name
 output outVnetId string = resVnet.id
