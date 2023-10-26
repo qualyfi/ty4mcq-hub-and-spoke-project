@@ -24,8 +24,7 @@ param parOffer string
 param parSku string
 param parVersion string
 
-param parUtc string
-var varGuidSuffix = substring(uniqueString(parUtc), 1, 8)
+param parGuidSuffix string
 param parTenantId string
 param parUserObjectId string
 
@@ -101,7 +100,7 @@ resource resKvPDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLink
 
 //VM + VM NIC + Antimalware/ADE Extension
 resource resVm 'Microsoft.Compute/virtualMachines@2023-07-01' = {
-  name: 'vm-core-${parLocation}-001'
+  name: 'vm-${parSpokeName}-${parLocation}-001'
   location: parLocation
   properties: {
     hardwareProfile: {
@@ -133,7 +132,7 @@ resource resVm 'Microsoft.Compute/virtualMachines@2023-07-01' = {
   }
 }
 resource resVmNic 'Microsoft.Network/networkInterfaces@2023-05-01' = {
-  name: 'nic-core-${parLocation}-vm-001'
+  name: 'nic-${parSpokeName}-${parLocation}-vm-001'
   location: parLocation
   properties: {
     ipConfigurations: [
@@ -187,7 +186,7 @@ resource resAdeVmExtension 'Microsoft.Compute/virtualMachines/extensions@2023-07
 
 //Disk Encryption Key Vault
 resource resEncryptKv 'Microsoft.KeyVault/vaults@2023-02-01' = {
-  name: 'kv-encrypt-${parSpokeName}-${varGuidSuffix}'
+  name: 'kv-encrypt-${parSpokeName}-${parGuidSuffix}'
   location: parLocation
   properties: {
     enabledForDeployment: false

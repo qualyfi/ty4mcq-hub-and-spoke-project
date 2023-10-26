@@ -2,6 +2,7 @@ param parLocation string = resourceGroup().location
 param parUtc string = utcNow()
 param parSecKeyVaultName string
 param parUserObjectId string
+var varGuidSuffix = substring(uniqueString(parUtc), 1, 8)
 
 resource resSecKv 'Microsoft.KeyVault/vaults@2023-02-01' existing = {
   name: parSecKeyVaultName
@@ -22,6 +23,8 @@ module modHub 'modules/hub.bicep' = {
     parWaPDnsZoneName: modWaPDnsZone.outputs.outPDnsZoneName
     parSqlPDnsZoneName: modSqlPDnsZone.outputs.outPDnsZoneName
     parKvPDnsZoneName: modKvPDnsZone.outputs.outPDnsZoneName
+
+    parLawId: modLaw.outputs.outLawId
   }
 }
 
@@ -42,6 +45,8 @@ module modCore 'modules/core.bicep' = {
     parDefaultNsgId: modDefaultNsg.outputs.outDefaultNsgId
     parRtId: modRt.outputs.outRtId
 
+    parGuidSuffix: varGuidSuffix
+
     parVmSize: 'Standard_D2S_v3'
     
     parComputerName: 'vm1core001'
@@ -53,7 +58,6 @@ module modCore 'modules/core.bicep' = {
     parSku: '2022-datacenter-azure-edition'
     parVersion: 'latest'
 
-    parUtc: parUtc
     parTenantId: subscription().tenantId
     parUserObjectId: parUserObjectId
   }
@@ -217,5 +221,13 @@ module modAppGw 'modules/appgw.bicep' = {
     parAgwName: 'agw-hub-${parLocation}-001'
     parAgwSubnetId: modHub.outputs.outAppGwSubnetId
     parProdWaFqdn: modSpokeProd.outputs.outWaFqdn
+  }
+}
+
+module modLaw 'modules/law.bicep' = {
+  name: 'law'
+  params: {
+    parLocation: parLocation
+    parGuidSuffix: varGuidSuffix
   }
 }
