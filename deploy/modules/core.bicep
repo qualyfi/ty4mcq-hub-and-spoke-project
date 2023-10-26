@@ -8,6 +8,7 @@ param parKVSubnetAddressPrefix string
 param parWaPDnsZoneName string
 param parSqlPDnsZoneName string
 param parKvPDnsZoneName string
+param parKvPDnsZoneId string
 
 param parDefaultNsgId string
 param parRtId string
@@ -28,7 +29,6 @@ var varGuidSuffix = substring(uniqueString(parUtc), 1, 8)
 param parTenantId string
 param parUserObjectId string
 
-param parKvPDnsZoneId string
 
 //Core VNet + Web App/SQL Private DNS Zone Link
 resource resVnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
@@ -99,8 +99,7 @@ resource resKvPDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLink
   }
 }
 
-
-//VM + VM NIC + VM Extension
+//VM + VM NIC + Antimalware/ADE Extension
 resource resVm 'Microsoft.Compute/virtualMachines@2023-07-01' = {
   name: 'vm-core-${parLocation}-001'
   location: parLocation
@@ -152,7 +151,7 @@ resource resVmNic 'Microsoft.Network/networkInterfaces@2023-05-01' = {
     ]
   }
 }
-resource resVmExtension 'Microsoft.Compute/virtualMachines/extensions@2023-07-01' = {
+resource resAntiMalwareVmExtension 'Microsoft.Compute/virtualMachines/extensions@2023-07-01' = {
   name: 'IaaSAntimalware'
   location: parLocation
   parent: resVm
@@ -166,6 +165,25 @@ resource resVmExtension 'Microsoft.Compute/virtualMachines/extensions@2023-07-01
     }
   }
 }
+resource resAdeVmExtension 'Microsoft.Compute/virtualMachines/extensions@2023-07-01' = {
+  name: 'AzureDiskEncryption'
+  location: parLocation
+  parent: resVm
+  properties: {
+    publisher: 'Microsoft.Azure.Security'
+    type: 'AzureDiskEncryption'
+    typeHandlerVersion: '2.2'
+    autoUpgradeMinorVersion: true
+    settings: {
+      EncryptionOperation: 'EnableEncryption'
+      KeyVaultURL: resEncryptKv.properties.vaultUri
+      KeyVaultResourceId: resEncryptKv.id
+      KeyEncryptionAlgoritm: 'RSA-OAEP'
+      VolumeType: 'All'
+      ResizeOSDisk: false 
+    }
+  }
+}
 
 //Disk Encryption Key Vault
 resource resEncryptKv 'Microsoft.KeyVault/vaults@2023-02-01' = {
@@ -176,6 +194,7 @@ resource resEncryptKv 'Microsoft.KeyVault/vaults@2023-02-01' = {
     enabledForTemplateDeployment: false
     enabledForDiskEncryption: true
     publicNetworkAccess: 'Disabled'
+    
     tenantId: parTenantId
     accessPolicies: [
       {
@@ -186,8 +205,10 @@ resource resEncryptKv 'Microsoft.KeyVault/vaults@2023-02-01' = {
             'all'
           ]
           secrets: [
-            'list'
-            'get'
+            'all'
+          ]
+          certificates: [
+            'all'
           ]
         }
       }
@@ -198,7 +219,7 @@ resource resEncryptKv 'Microsoft.KeyVault/vaults@2023-02-01' = {
     }
   }
 }
-resource resKvPe 'Microsoft.Network/privateEndpoints@2023-05-01' = {
+resource resEncryptKvPe 'Microsoft.Network/privateEndpoints@2023-05-01' = {
   name: 'pe-${parSpokeName}-${parLocation}-kv-001'
   location: parLocation
   properties: {
@@ -218,7 +239,7 @@ resource resKvPe 'Microsoft.Network/privateEndpoints@2023-05-01' = {
     }
   }
 }
-resource resKvPeNic 'Microsoft.Network/networkInterfaces@2023-05-01' = {
+resource resKvPeNic 'Microsoft.Network/networkInterfaces@2020-11-01' = {
   name: 'nic-${parSpokeName}-${parLocation}-kv-001'
   location: parLocation
   properties: {
@@ -236,8 +257,8 @@ resource resKvPeNic 'Microsoft.Network/networkInterfaces@2023-05-01' = {
   }
 }
 resource resKvPeDnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-05-01' = {
-  name: 'kvDnsGroupName'
-  parent: resKvPe
+  name: 'kvDnsGroup'
+  parent: resEncryptKvPe
   properties: {
     privateDnsZoneConfigs: [
       {
@@ -249,6 +270,7 @@ resource resKvPeDnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroup
     ]
   }
 }
+
 
 output outVnetName string = resVnet.name
 output outVnetId string = resVnet.id

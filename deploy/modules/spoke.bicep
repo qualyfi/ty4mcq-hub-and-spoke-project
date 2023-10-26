@@ -183,7 +183,7 @@ resource resWaPeNic 'Microsoft.Network/networkInterfaces@2023-05-01' = {
   }
 }
 resource resWaPeDnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-05-01' = {
-  name: 'waDnsGroupName'
+  name: 'waPeDnsGroup'
   parent: resWaPe
   properties: {
     privateDnsZoneConfigs: [
@@ -256,7 +256,7 @@ resource resSqlPeNic 'Microsoft.Network/networkInterfaces@2023-05-01' = {
   }
 }
 resource resSqlPeDnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-05-01' = {
-  name: 'sqlDnsGroupName'
+  name: 'sqlPeDnsGroup'
   parent: resSqlPe
   properties: {
     privateDnsZoneConfigs: [

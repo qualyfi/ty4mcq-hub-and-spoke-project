@@ -37,6 +37,7 @@ module modCore 'modules/core.bicep' = {
     parWaPDnsZoneName: modWaPDnsZone.outputs.outPDnsZoneName
     parSqlPDnsZoneName: modSqlPDnsZone.outputs.outPDnsZoneName
     parKvPDnsZoneName: modKvPDnsZone.outputs.outPDnsZoneName
+    parKvPDnsZoneId: modKvPDnsZone.outputs.outPDnsZoneId
 
     parDefaultNsgId: modDefaultNsg.outputs.outDefaultNsgId
     parRtId: modRt.outputs.outRtId
@@ -55,8 +56,6 @@ module modCore 'modules/core.bicep' = {
     parUtc: parUtc
     parTenantId: subscription().tenantId
     parUserObjectId: parUserObjectId
-
-    parKvPDnsZoneId: modKvPDnsZone.outputs.outPDnsZoneId
   }
 }
 
@@ -187,8 +186,8 @@ module modRt 'modules/rt.bicep' = {
   name: 'rt'
   params: {
     parLocation: parLocation
-    parAfwIpAddress: '10.30.3.4'
-    // parAfwIpAddress: modHub.outputs.outAfwIpAddress
+    // parAfwIpAddress: '10.30.3.4'
+    parAfwIpAddress: modHub.outputs.outAfwIpAddress
   }
 }
 
@@ -210,13 +209,13 @@ module modKvPDnsZone 'modules/privatednszone.bicep' = {
     privateDnsZoneName: 'privatelink${environment().suffixes.keyvaultDns}'
   }
 }
-// module modAppGw 'modules/appgw.bicep' = {
-//   name: 'appGw'
-//   params: {
-//     parLocation: parLocation
-//     parSpokeName: 'hub'
-//     parAgwName: 'agw-hub-${parLocation}-001'
-//     parAgwSubnetId: modHub.outputs.outAppGwSubnetId
-//     parProdWaFqdn: modSpokeProd.outputs.outWaFqdn
-//   }
-// }
+module modAppGw 'modules/appgw.bicep' = {
+  name: 'appGw'
+  params: {
+    parLocation: parLocation
+    parSpokeName: 'hub'
+    parAgwName: 'agw-hub-${parLocation}-001'
+    parAgwSubnetId: modHub.outputs.outAppGwSubnetId
+    parProdWaFqdn: modSpokeProd.outputs.outWaFqdn
+  }
+}
