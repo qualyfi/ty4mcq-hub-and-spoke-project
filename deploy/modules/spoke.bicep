@@ -157,6 +157,11 @@ resource resWaPe 'Microsoft.Network/privateEndpoints@2023-05-01' = {
           groupIds: [
             'sites'
           ]
+          privateLinkServiceConnectionState: {
+            status: 'Approved'
+            description: 'Auto-Approved'
+            actionsRequired: 'None'
+          }
         }
       }
     ]
@@ -188,7 +193,7 @@ resource resWaPeDnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroup
   properties: {
     privateDnsZoneConfigs: [
       {
-        name: 'ipConfig'
+        name: 'waPeDnsGroupConfig'
         properties: {
           privateDnsZoneId: parWaPDnsZoneId
         }
@@ -230,6 +235,11 @@ resource resSqlPe 'Microsoft.Network/privateEndpoints@2023-05-01' = {
           groupIds: [
             'sqlServer'
           ]
+          privateLinkServiceConnectionState: {
+            status: 'Approved'
+            description: 'Auto-Approved'
+            actionsRequired: 'None'
+          }
         }
       }
     ]
@@ -261,7 +271,7 @@ resource resSqlPeDnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGrou
   properties: {
     privateDnsZoneConfigs: [
       {
-        name: 'ipConfig'
+        name: 'sqlPeDnsGroupConfig'
         properties: {
           privateDnsZoneId: parSqlPDnsZoneId
         }

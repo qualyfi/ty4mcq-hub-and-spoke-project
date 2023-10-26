@@ -193,7 +193,7 @@ resource resEncryptKv 'Microsoft.KeyVault/vaults@2023-02-01' = {
     enabledForDeployment: false
     enabledForTemplateDeployment: false
     enabledForDiskEncryption: true
-    publicNetworkAccess: 'Disabled'
+    publicNetworkAccess: 'Enabled'
     
     tenantId: parTenantId
     accessPolicies: [
@@ -231,6 +231,11 @@ resource resEncryptKvPe 'Microsoft.Network/privateEndpoints@2023-05-01' = {
           groupIds: [
             'vault'
           ]
+          privateLinkServiceConnectionState: {
+            status: 'Approved'
+            description: 'Auto-Approved'
+            actionsRequired: 'None'
+          }
         }
       }
     ]
@@ -262,7 +267,7 @@ resource resKvPeDnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroup
   properties: {
     privateDnsZoneConfigs: [
       {
-        name: 'ipConfig'
+        name: 'kvPeDnsZoneGroupConfig'
         properties: {
           privateDnsZoneId: parKvPDnsZoneId
         }

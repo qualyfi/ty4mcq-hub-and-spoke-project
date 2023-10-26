@@ -91,29 +91,29 @@ resource resBasPublicIP 'Microsoft.Network/publicIPAddresses@2023-05-01' = {
     publicIPAllocationMethod: 'Static'
   }
 }
-resource resBas 'Microsoft.Network/bastionHosts@2023-05-01' = {
-  name: 'bas-${parSpokeName}-${parLocation}-001'
-  location: parLocation
-  sku: {
-    name: 'Basic'
-  }
-  properties: {
-    ipConfigurations: [
-      {
-        name: 'ipConfig'
-        properties: {
-          privateIPAllocationMethod:'Dynamic'
-          publicIPAddress: {
-            id: resBasPublicIP.id
-          }
-          subnet: {
-            id: resVnet.properties.subnets[3].id
-          }
-        }
-      }
-    ]
-  }
-}
+// resource resBas 'Microsoft.Network/bastionHosts@2023-05-01' = {
+//   name: 'bas-${parSpokeName}-${parLocation}-001'
+//   location: parLocation
+//   sku: {
+//     name: 'Basic'
+//   }
+//   properties: {
+//     ipConfigurations: [
+//       {
+//         name: 'ipConfig'
+//         properties: {
+//           privateIPAllocationMethod:'Dynamic'
+//           publicIPAddress: {
+//             id: resBasPublicIP.id
+//           }
+//           subnet: {
+//             id: resVnet.properties.subnets[3].id
+//           }
+//         }
+//       }
+//     ]
+//   }
+// }
 
 //Firewall + Firewall Policy + any/any Rule, + Firewall Public IP
 resource resAfwPublicIP 'Microsoft.Network/publicIPAddresses@2023-05-01' = {
