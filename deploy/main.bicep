@@ -25,7 +25,7 @@ module modHub 'modules/hub.bicep' = {
     parSaPDnsZoneName: modSaPDnsZone.outputs.outPDnsZoneName
     parKvPDnsZoneName: modKvPDnsZone.outputs.outPDnsZoneName
 
-    // parLawId: modLaw.outputs.outLawId
+    parLawId: modLaw.outputs.outLawId
   }
 }
 
@@ -203,8 +203,8 @@ module modRt 'modules/rt.bicep' = {
   name: 'rt'
   params: {
     parLocation: parLocation
-    parAfwIpAddress: '10.30.3.4'
-    // parAfwIpAddress: modHub.outputs.outAfwIpAddress
+    // parAfwIpAddress: '10.30.3.4'
+    parAfwIpAddress: modHub.outputs.outAfwIpAddress
   }
 }
 
@@ -233,21 +233,29 @@ module modKvPDnsZone 'modules/privatednszone.bicep' = {
   }
 }
 
-// module modAppGw 'modules/appgw.bicep' = {
-//   name: 'appGw'
-//   params: {
-//     parLocation: parLocation
-//     parSpokeName: 'hub'
-//     parAgwName: 'agw-hub-${parLocation}-001'
-//     parAgwSubnetId: modHub.outputs.outAppGwSubnetId
-//     parProdWaFqdn: modSpokeProd.outputs.outWaFqdn
-//   }
-// }
+module modAppGw 'modules/appgw.bicep' = {
+  name: 'appGw'
+  params: {
+    parLocation: parLocation
+    parSpokeName: 'hub'
+    parAgwName: 'agw-hub-${parLocation}-001'
+    parAgwSubnetId: modHub.outputs.outAppGwSubnetId
+    parProdWaFqdn: modSpokeProd.outputs.outWaFqdn
+  }
+}
 
 module modLaw 'modules/law.bicep' = {
   name: 'law'
   params: {
     parLocation: parLocation
     parGuidSuffix: varGuidSuffix
+  }
+}
+
+module modProdAppInsights 'modules/appinsights.bicep' = {
+  name: 'prodAppInsights'
+  params: {
+    parLocation: parLocation
+    parLawId: modLaw.outputs.outLawId
   }
 }
