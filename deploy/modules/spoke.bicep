@@ -38,6 +38,10 @@ param parKvPDnsZoneName string
 resource resVnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
   name: 'vnet-${parSpokeName}-${parLocation}-001'
   location: parLocation
+  tags: {
+    Dept: parSpokeName
+    Owner: '${parSpokeName}Owner'
+  }
   properties: {
     addressSpace: {
       addressPrefixes: [
@@ -87,6 +91,10 @@ resource resVnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
 resource resWaPDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
   name: '${parWaPDnsZoneName}/${parWaPDnsZoneName}-${parSpokeName}-link'
   location: 'global'
+  tags: {
+    Dept: parSpokeName
+    Owner: '${parSpokeName}Owner'
+  }
   properties: {
     registrationEnabled: false
     virtualNetwork: {
@@ -97,6 +105,10 @@ resource resWaPDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLink
 resource resSqlPDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
   name: '${parSqlPDnsZoneName}/${parSqlPDnsZoneName}-${parSpokeName}-link'
   location: 'global'
+  tags: {
+    Dept: parSpokeName
+    Owner: '${parSpokeName}Owner'
+  }
   properties: {
     registrationEnabled: false
     virtualNetwork: {
@@ -107,6 +119,10 @@ resource resSqlPDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLin
 resource resSaPDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
   name: '${parSaPDnsZoneName}/${parSaPDnsZoneName}-${parSpokeName}-link'
   location: 'global'
+  tags: {
+    Dept: parSpokeName
+    Owner: '${parSpokeName}Owner'
+  }
   properties: {
     registrationEnabled: false
     virtualNetwork: {
@@ -117,6 +133,10 @@ resource resSaPDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLink
 resource resKvPDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
   name: '${parKvPDnsZoneName}/${parKvPDnsZoneName}-${parSpokeName}-link'
   location: 'global'
+  tags: {
+    Dept: parSpokeName
+    Owner: '${parSpokeName}Owner'
+  }
   properties: {
     registrationEnabled: false
     virtualNetwork: {
@@ -129,6 +149,10 @@ resource resKvPDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLink
 resource resAsp 'Microsoft.Web/serverfarms@2022-09-01' = {
   name: 'asp-${parSpokeName}-${parLocation}-001-${uniqueString(parUtc)}'
   location: parLocation
+  tags: {
+    Dept: 'coreServices'
+    Owner: 'coreServicesOwner'
+  }
   properties: {
     reserved: true
   }
@@ -140,6 +164,10 @@ resource resAsp 'Microsoft.Web/serverfarms@2022-09-01' = {
 resource resWa 'Microsoft.Web/sites@2022-09-01' = {
   name: 'as-${parSpokeName}-${parLocation}-001-${uniqueString(parUtc)}'
   location: parLocation
+  tags: {
+    Dept: 'coreServices'
+    Owner: 'coreServicesOwner'
+  }
   properties: {
     serverFarmId: resAsp.id
     publicNetworkAccess: 'Disabled'
@@ -162,6 +190,10 @@ resource resSrcControls 'Microsoft.Web/sites/sourcecontrols@2022-09-01' = {
 resource resWaPe 'Microsoft.Network/privateEndpoints@2023-05-01' = {
   name: 'pe-${parSpokeName}-${parLocation}-wa-001'
   location: parLocation
+  tags: {
+    Dept: parSpokeName
+    Owner: '${parSpokeName}Owner'
+  }
   properties: {
     privateLinkServiceConnections: [
       {
@@ -182,6 +214,10 @@ resource resWaPe 'Microsoft.Network/privateEndpoints@2023-05-01' = {
 resource resWaPeNic 'Microsoft.Network/networkInterfaces@2023-05-01' = {
   name: 'nic-${parSpokeName}-${parLocation}-wa-001'
   location: parLocation
+  tags: {
+    Dept: parSpokeName
+    Owner: '${parSpokeName}Owner'
+  }
   properties: {
     ipConfigurations: [
       {
@@ -215,6 +251,10 @@ resource resWaPeDnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroup
 resource resSqlServer 'Microsoft.Sql/servers@2021-11-01' ={
   name: 'sql-${parSpokeName}-${parLocation}-001-${uniqueString(parUtc)}'
   location: parLocation
+  tags: {
+    Dept: 'coreServices'
+    Owner: 'coreServicesOwner'
+  }
   properties: {
     administratorLogin: parSqlAdminUsername
     administratorLoginPassword: parSqlAdminPassword
@@ -225,6 +265,10 @@ resource resSqlDb 'Microsoft.Sql/servers/databases@2021-11-01' = {
   parent: resSqlServer
   name: 'sqldb-${parSpokeName}-${parLocation}-001'
   location: parLocation
+  tags: {
+    Dept: 'coreServices'
+    Owner: 'coreServicesOwner'
+  }
   sku: {
     name: 'Basic'
     tier: 'Basic'
@@ -235,6 +279,10 @@ resource resSqlDb 'Microsoft.Sql/servers/databases@2021-11-01' = {
 resource resSqlPe 'Microsoft.Network/privateEndpoints@2023-05-01' = {
   name: 'pe-${parSpokeName}-${parLocation}-sql-001'
   location: parLocation
+  tags: {
+    Dept: parSpokeName
+    Owner: '${parSpokeName}Owner'
+  }
   properties: {
     privateLinkServiceConnections: [
       {
@@ -255,6 +303,10 @@ resource resSqlPe 'Microsoft.Network/privateEndpoints@2023-05-01' = {
 resource resSqlPeNic 'Microsoft.Network/networkInterfaces@2023-05-01' = {
   name: 'nic-${parSpokeName}-${parLocation}-sql-001'
   location: parLocation
+  tags: {
+    Dept: parSpokeName
+    Owner: '${parSpokeName}Owner'
+  }
   properties: {
     ipConfigurations: [
       {
@@ -288,6 +340,10 @@ resource resSqlPeDnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGrou
 resource resSa 'Microsoft.Storage/storageAccounts@2023-01-01' = {
   name: 'st${parSpokeName}001${parGuidSuffix}'
   location: parLocation
+  tags: {
+    Dept: 'coreServices'
+    Owner: 'coreServicesOwner'
+  }
   kind: 'StorageV2'
   sku: {
     name: 'Standard_LRS'
@@ -301,6 +357,10 @@ resource resSa 'Microsoft.Storage/storageAccounts@2023-01-01' = {
 resource resSaPe 'Microsoft.Network/privateEndpoints@2023-05-01' = {
   name: 'pe-${parSpokeName}-${parLocation}-sa-001'
   location: parLocation
+  tags: {
+    Dept: parSpokeName
+    Owner: '${parSpokeName}Owner'
+  }
   properties: {
     privateLinkServiceConnections: [
       {
@@ -321,6 +381,10 @@ resource resSaPe 'Microsoft.Network/privateEndpoints@2023-05-01' = {
 resource resSaPeNic 'Microsoft.Network/networkInterfaces@2023-05-01' = {
   name: 'nic-${parSpokeName}-${parLocation}-sa-001'
   location: parLocation
+  tags: {
+    Dept: parSpokeName
+    Owner: '${parSpokeName}Owner'
+  }
   properties: {
     ipConfigurations: [
       {

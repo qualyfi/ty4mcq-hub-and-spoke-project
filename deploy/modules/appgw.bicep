@@ -7,6 +7,10 @@ param parProdWaFqdn string
 resource resAgwPublicIP 'Microsoft.Network/publicIPAddresses@2023-05-01' = {
   name: 'pip-${parSpokeName}-${parLocation}-agw-001'
   location: parLocation
+  tags: {
+    Dept: parSpokeName
+    Owner: '${parSpokeName}Owner'
+  }
   sku: {
     name: 'Standard'
   }
@@ -17,6 +21,10 @@ resource resAgwPublicIP 'Microsoft.Network/publicIPAddresses@2023-05-01' = {
 resource resAgw 'Microsoft.Network/applicationGateways@2023-05-01' = {
   name: parAgwName
   location: parLocation
+  tags: {
+    Dept: parSpokeName
+    Owner: '${parSpokeName}Owner'
+  }
   properties: {
     sku: {
       name: 'Standard_v2'

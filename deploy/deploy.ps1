@@ -21,4 +21,9 @@ Set-AzKeyVaultSecret -VaultName $keyVaultName -Name 'vmAdminPassword' -SecretVal
 Set-AzKeyVaultSecret -VaultName $keyVaultName -Name 'sqlAdminUsername' -SecretValue $sqlAdminUsername
 Set-AzKeyVaultSecret -VaultName $keyVaultName -Name 'sqlAdminPassword' -SecretValue $sqlAdminPassword
 
+Write-Output 'VM Admin Username'
+Get-AzKeyVaultSecret -VaultName $keyVaultName -Name "vmAdminUsername" -AsPlainText
+Write-Output 'VM Admin Password'
+Get-AzKeyVaultSecret -VaultName $keyVaultName -Name "vmAdminPassword" -AsPlainText
+
 New-AzResourceGroupDeployment -ResourceGroupName $resourceGroupName -TemplateFile '.\deploy\main.bicep' -parSecKeyVaultName $keyVaultName -parUserObjectId (Get-AzADUser -UserPrincipalName (Get-AzContext).Account).Id

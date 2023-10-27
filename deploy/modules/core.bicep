@@ -37,6 +37,10 @@ param parLawId string
 resource resVnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
   name: 'vnet-${parSpokeName}-${parLocation}-001'
   location: parLocation
+  tags: {
+    Dept: parSpokeName
+    Owner: '${parSpokeName}Owner'
+  }
   properties: {
     addressSpace: {
       addressPrefixes: [
@@ -74,6 +78,10 @@ resource resVnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
 resource resWaPDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
   name: '${parWaPDnsZoneName}/${parWaPDnsZoneName}-${parSpokeName}-link'
   location: 'global'
+  tags: {
+    Dept: parSpokeName
+    Owner: '${parSpokeName}Owner'
+  }
   properties: {
     registrationEnabled: false
     virtualNetwork: {
@@ -84,6 +92,10 @@ resource resWaPDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLink
 resource resSqlPDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
   name: '${parSqlPDnsZoneName}/${parSqlPDnsZoneName}-${parSpokeName}-link'
   location: 'global'
+  tags: {
+    Dept: parSpokeName
+    Owner: '${parSpokeName}Owner'
+  }
   properties: {
     registrationEnabled: false
     virtualNetwork: {
@@ -94,6 +106,10 @@ resource resSqlPDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLin
 resource resSaPDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
   name: '${parSaPDnsZoneName}/${parSaPDnsZoneName}-${parSpokeName}-link'
   location: 'global'
+  tags: {
+    Dept: parSpokeName
+    Owner: '${parSpokeName}Owner'
+  }
   properties: {
     registrationEnabled: false
     virtualNetwork: {
@@ -104,6 +120,10 @@ resource resSaPDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLink
 resource resKvPDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
   name: '${parKvPDnsZoneName}/${parKvPDnsZoneName}-${parSpokeName}-link'
   location: 'global'
+  tags: {
+    Dept: parSpokeName
+    Owner: '${parSpokeName}Owner'
+  }
   properties: {
     registrationEnabled: false
     virtualNetwork: {
@@ -116,6 +136,10 @@ resource resKvPDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLink
 resource resVm 'Microsoft.Compute/virtualMachines@2023-07-01' = {
   name: 'vm-${parSpokeName}-${parLocation}-001'
   location: parLocation
+  tags: {
+    Dept: parSpokeName
+    Owner: '${parSpokeName}Owner'
+  }
   properties: {
     hardwareProfile: {
       vmSize: parVmSize
@@ -148,6 +172,10 @@ resource resVm 'Microsoft.Compute/virtualMachines@2023-07-01' = {
 resource resVmNic 'Microsoft.Network/networkInterfaces@2023-05-01' = {
   name: 'nic-${parSpokeName}-${parLocation}-vm-001'
   location: parLocation
+  tags: {
+    Dept: parSpokeName
+    Owner: '${parSpokeName}Owner'
+  }
   properties: {
     ipConfigurations: [
       {
@@ -168,6 +196,10 @@ resource resAntiMalwareVmExtension 'Microsoft.Compute/virtualMachines/extensions
   name: 'IaaSAntimalware'
   location: parLocation
   parent: resVm
+  tags: {
+    Dept: parSpokeName
+    Owner: '${parSpokeName}Owner'
+  }
   properties: {
     publisher: 'Microsoft.Azure.Security'
     type: 'IaaSAntimalware'
@@ -182,6 +214,10 @@ resource resAdeVmExtension 'Microsoft.Compute/virtualMachines/extensions@2023-07
   name: 'AzureDiskEncryption'
   location: parLocation
   parent: resVm
+  tags: {
+    Dept: parSpokeName
+    Owner: '${parSpokeName}Owner'
+  }
   properties: {
     publisher: 'Microsoft.Azure.Security'
     type: 'AzureDiskEncryption'
@@ -201,6 +237,10 @@ resource resAmaVmExtension 'Microsoft.Compute/virtualMachines/extensions@2021-11
   name: 'AzureMonitorWindowsAgent'
   parent: resVm
   location: parLocation
+  tags: {
+    Dept: parSpokeName
+    Owner: '${parSpokeName}Owner'
+  }
   properties: {
     publisher: 'Microsoft.Azure.Monitor'
     type: 'AzureMonitorWindowsAgent'
@@ -216,6 +256,10 @@ resource resDaVmExtension 'Microsoft.Compute/virtualMachines/extensions@2021-11-
   name: 'DependencyAgentWindows'
   parent: resVm
   location: parLocation
+  tags: {
+    Dept: parSpokeName
+    Owner: '${parSpokeName}Owner'
+  }
   properties: {
     publisher: 'Microsoft.Azure.Monitoring.DependencyAgent'
     type: 'DependencyAgentWindows'
@@ -231,6 +275,10 @@ resource resDaVmExtension 'Microsoft.Compute/virtualMachines/extensions@2021-11-
 resource resEncryptKv 'Microsoft.KeyVault/vaults@2023-02-01' = {
   name: 'kv-encrypt-${parSpokeName}-${parGuidSuffix}'
   location: parLocation
+  tags: {
+    Dept: 'coreServices'
+    Owner: 'coreServicesOwner'
+  }
   properties: {
     enabledForDeployment: false
     enabledForTemplateDeployment: false
@@ -264,6 +312,10 @@ resource resEncryptKv 'Microsoft.KeyVault/vaults@2023-02-01' = {
 resource resEncryptKvPe 'Microsoft.Network/privateEndpoints@2023-05-01' = {
   name: 'pe-${parSpokeName}-${parLocation}-kv-001'
   location: parLocation
+  tags: {
+    Dept: parSpokeName
+    Owner: '${parSpokeName}Owner'
+  }
   properties: {
     privateLinkServiceConnections: [
       {
@@ -284,6 +336,10 @@ resource resEncryptKvPe 'Microsoft.Network/privateEndpoints@2023-05-01' = {
 resource resKvPeNic 'Microsoft.Network/networkInterfaces@2020-11-01' = {
   name: 'nic-${parSpokeName}-${parLocation}-kv-001'
   location: parLocation
+  tags: {
+    Dept: parSpokeName
+    Owner: '${parSpokeName}Owner'
+  }
   properties: {
     ipConfigurations: [
       {
@@ -317,6 +373,10 @@ resource resKvPeDnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroup
 resource resDcr 'Microsoft.Insights/dataCollectionRules@2022-06-01' = {
   name: 'MSVMI-vmDcr'
   location: parLocation
+  tags: {
+    Dept: 'coreServices'
+    Owner: 'coreServicesOwner'
+  }
   properties: {
     dataSources: {
       performanceCounters: [
@@ -383,6 +443,10 @@ resource resVmDcrAssociation 'Microsoft.Insights/dataCollectionRuleAssociations@
 resource resRsv 'Microsoft.RecoveryServices/vaults@2023-06-01' = {
   name: 'rsv-${parSpokeName}-${parLocation}-001'
   location: parLocation
+  tags: {
+    Dept: 'coreServices'
+    Owner: 'coreServicesOwner'
+  }
   sku: {
     name: 'RS0'
     tier: 'Standard'
@@ -404,6 +468,10 @@ resource resRsv 'Microsoft.RecoveryServices/vaults@2023-06-01' = {
 // resource resRsvBackupPolicy 'Microsoft.RecoveryServices/vaults/backupPolicies@2021-03-01' = {
 //   name: 'rsvBackupPolicy'
 //   parent: resRsv
+// tags: {
+//   Dept: 'coreServices'
+//   Owner: 'coreServicesOwner'
+// }
 //   properties: {
 //     backupManagementType: 'AzureIaasVM'
 //     instantRpRetentionRangeInDays: 2

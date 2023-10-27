@@ -5,6 +5,10 @@ param parAfwIpAddress string
 resource resRouteTable 'Microsoft.Network/routeTables@2023-05-01' = {
   name: 'rt-${parLocation}-001'
   location: parLocation
+  tags: {
+    Dept: 'coreServices'
+    Owner: 'coreServicesOwner'
+  }
   properties: {
     routes: [
       {

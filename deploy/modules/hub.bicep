@@ -18,6 +18,10 @@ param parLawId string
 resource resVnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
   name: 'vnet-${parSpokeName}-${parLocation}-001'
   location: parLocation
+  tags: {
+    Dept: parSpokeName
+    Owner: '${parSpokeName}Owner'
+  }
   properties: {
     addressSpace: {
       addressPrefixes: [
@@ -55,6 +59,10 @@ resource resVnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
 resource resWaPDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
   name: '${parWaPDnsZoneName}/${parWaPDnsZoneName}-${parSpokeName}-link'
   location: 'global'
+  tags: {
+    Dept: parSpokeName
+    Owner: '${parSpokeName}Owner'
+  }
   properties: {
     registrationEnabled: false
     virtualNetwork: {
@@ -65,6 +73,10 @@ resource resWaPDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLink
 resource resSqlPDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
   name: '${parSqlPDnsZoneName}/${parSqlPDnsZoneName}-${parSpokeName}-link'
   location: 'global'
+  tags: {
+    Dept: parSpokeName
+    Owner: '${parSpokeName}Owner'
+  }
   properties: {
     registrationEnabled: false
     virtualNetwork: {
@@ -75,6 +87,10 @@ resource resSqlPDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLin
 resource resSaPDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
   name: '${parSaPDnsZoneName}/${parSaPDnsZoneName}-${parSpokeName}-link'
   location: 'global'
+  tags: {
+    Dept: parSpokeName
+    Owner: '${parSpokeName}Owner'
+  }
   properties: {
     registrationEnabled: false
     virtualNetwork: {
@@ -85,6 +101,10 @@ resource resSaPDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLink
 resource resKvPDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
   name: '${parKvPDnsZoneName}/${parKvPDnsZoneName}-${parSpokeName}-link'
   location: 'global'
+  tags: {
+    Dept: parSpokeName
+    Owner: '${parSpokeName}Owner'
+  }
   properties: {
     registrationEnabled: false
     virtualNetwork: {
@@ -97,6 +117,10 @@ resource resKvPDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLink
 resource resBasPublicIP 'Microsoft.Network/publicIPAddresses@2023-05-01' = {
   name: 'pip-${parSpokeName}-${parLocation}-bas-001'
   location: parLocation
+  tags: {
+    Dept: parSpokeName
+    Owner: '${parSpokeName}Owner'
+  }
   sku: {
     name: 'Standard'
   }
@@ -107,6 +131,10 @@ resource resBasPublicIP 'Microsoft.Network/publicIPAddresses@2023-05-01' = {
 resource resBas 'Microsoft.Network/bastionHosts@2023-05-01' = {
   name: 'bas-${parSpokeName}-${parLocation}-001'
   location: parLocation
+  tags: {
+    Dept: parSpokeName
+    Owner: '${parSpokeName}Owner'
+  }
   sku: {
     name: 'Basic'
   }
@@ -132,6 +160,10 @@ resource resBas 'Microsoft.Network/bastionHosts@2023-05-01' = {
 resource resAfwPublicIP 'Microsoft.Network/publicIPAddresses@2023-05-01' = {
   name: 'pip-${parSpokeName}-${parLocation}-afw-001'
   location: parLocation
+  tags: {
+    Dept: parSpokeName
+    Owner: '${parSpokeName}Owner'
+  }
   sku: {
     name: 'Standard'
   }
@@ -142,6 +174,10 @@ resource resAfwPublicIP 'Microsoft.Network/publicIPAddresses@2023-05-01' = {
 resource resAfwPolicy 'Microsoft.Network/firewallPolicies@2023-05-01' = {
   name: 'AfwPolicy'
   location: parLocation
+  tags: {
+    Dept: parSpokeName
+    Owner: '${parSpokeName}Owner'
+  }
   properties: {
     sku: {
       tier: 'Standard'
@@ -190,6 +226,10 @@ resource resAfwPolicyRuleCollectionGroup 'Microsoft.Network/firewallPolicies/rul
 resource resAfw 'Microsoft.Network/azureFirewalls@2023-05-01' = {
   name: 'afw-${parSpokeName}-${parLocation}-001'
   location: parLocation
+  tags: {
+    Dept: parSpokeName
+    Owner: '${parSpokeName}Owner'
+  }
   properties: {
     sku: {
       name: 'AZFW_VNet'
@@ -237,6 +277,10 @@ resource resAfwDs 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
 resource resVpnGwPublicIP 'Microsoft.Network/publicIPAddresses@2023-05-01' = {
   name: 'pip-${parSpokeName}-${parLocation}-vpngw-001'
   location: parLocation
+  tags: {
+    Dept: parSpokeName
+    Owner: '${parSpokeName}Owner'
+  }
   sku: {
     name: 'Standard'
   }
@@ -244,33 +288,37 @@ resource resVpnGwPublicIP 'Microsoft.Network/publicIPAddresses@2023-05-01' = {
     publicIPAllocationMethod: 'Static'
   }
 }
-// resource resVpnGw 'Microsoft.Network/virtualNetworkGateways@2023-05-01' = {
-//   name: 'vgw-${parSpokeName}-${parLocation}-001'
-//   location: parLocation
-//   properties: {
-//     gatewayType: 'Vpn'
-//     ipConfigurations: [
-//       {
-//         name: 'ipConfig'
-//         properties: {
-//           privateIPAllocationMethod: 'Dynamic'
-//           subnet: {
-//             id: resVnet.properties.subnets[0].id
-//           }
-//           publicIPAddress: {
-//             id: resVpnGwPublicIP.id
-//           }
-//         }
-//       }
-//     ]
-//     vpnType: 'RouteBased'
-//     enableBgp: false
-//     sku: {
-//       name: 'VpnGw1'
-//       tier: 'VpnGw1'
-//     }
-//   }
-// }
+resource resVpnGw 'Microsoft.Network/virtualNetworkGateways@2023-05-01' = {
+  name: 'vgw-${parSpokeName}-${parLocation}-001'
+  location: parLocation
+  tags: {
+    Dept: parSpokeName
+    Owner: '${parSpokeName}Owner'
+  }
+  properties: {
+    gatewayType: 'Vpn'
+    ipConfigurations: [
+      {
+        name: 'ipConfig'
+        properties: {
+          privateIPAllocationMethod: 'Dynamic'
+          subnet: {
+            id: resVnet.properties.subnets[0].id
+          }
+          publicIPAddress: {
+            id: resVpnGwPublicIP.id
+          }
+        }
+      }
+    ]
+    vpnType: 'RouteBased'
+    enableBgp: false
+    sku: {
+      name: 'VpnGw1'
+      tier: 'VpnGw1'
+    }
+  }
+}
 
 output outVnetName string = resVnet.name
 output outVnetId string = resVnet.id

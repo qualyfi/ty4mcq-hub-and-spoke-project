@@ -203,7 +203,6 @@ module modRt 'modules/rt.bicep' = {
   name: 'rt'
   params: {
     parLocation: parLocation
-    // parAfwIpAddress: '10.30.3.4'
     parAfwIpAddress: modHub.outputs.outAfwIpAddress
   }
 }
