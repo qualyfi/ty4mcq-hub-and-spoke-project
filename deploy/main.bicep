@@ -62,6 +62,8 @@ module modCore 'modules/core.bicep' = {
 
     parTenantId: subscription().tenantId
     parUserObjectId: parUserObjectId
+
+    parLawId: modLaw.outputs.outLawId
   }
 }
 
@@ -200,8 +202,8 @@ module modRt 'modules/rt.bicep' = {
   name: 'rt'
   params: {
     parLocation: parLocation
-    // parAfwIpAddress: '10.30.3.4'
-    parAfwIpAddress: modHub.outputs.outAfwIpAddress
+    parAfwIpAddress: '10.30.3.4'
+    // parAfwIpAddress: modHub.outputs.outAfwIpAddress
   }
 }
 
@@ -230,17 +232,16 @@ module modKvPDnsZone 'modules/privatednszone.bicep' = {
   }
 }
 
-module modAppGw 'modules/appgw.bicep' = {
-  name: 'appGw'
-  params: {
-    parLocation: parLocation
-    parSpokeName: 'hub'
-    parAgwName: 'agw-hub-${parLocation}-001'
-    parAgwSubnetId: modHub.outputs.outAppGwSubnetId
-    parProdWaFqdn: modSpokeProd.outputs.outWaFqdn
-  }
-}
-
+// module modAppGw 'modules/appgw.bicep' = {
+//   name: 'appGw'
+//   params: {
+//     parLocation: parLocation
+//     parSpokeName: 'hub'
+//     parAgwName: 'agw-hub-${parLocation}-001'
+//     parAgwSubnetId: modHub.outputs.outAppGwSubnetId
+//     parProdWaFqdn: modSpokeProd.outputs.outWaFqdn
+//   }
+// }
 
 module modLaw 'modules/law.bicep' = {
   name: 'law'

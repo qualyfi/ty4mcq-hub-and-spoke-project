@@ -104,29 +104,29 @@ resource resBasPublicIP 'Microsoft.Network/publicIPAddresses@2023-05-01' = {
     publicIPAllocationMethod: 'Static'
   }
 }
-resource resBas 'Microsoft.Network/bastionHosts@2023-05-01' = {
-  name: 'bas-${parSpokeName}-${parLocation}-001'
-  location: parLocation
-  sku: {
-    name: 'Basic'
-  }
-  properties: {
-    ipConfigurations: [
-      {
-        name: 'ipConfig'
-        properties: {
-          privateIPAllocationMethod:'Dynamic'
-          publicIPAddress: {
-            id: resBasPublicIP.id
-          }
-          subnet: {
-            id: resVnet.properties.subnets[3].id
-          }
-        }
-      }
-    ]
-  }
-}
+// resource resBas 'Microsoft.Network/bastionHosts@2023-05-01' = {
+//   name: 'bas-${parSpokeName}-${parLocation}-001'
+//   location: parLocation
+//   sku: {
+//     name: 'Basic'
+//   }
+//   properties: {
+//     ipConfigurations: [
+//       {
+//         name: 'ipConfig'
+//         properties: {
+//           privateIPAllocationMethod:'Dynamic'
+//           publicIPAddress: {
+//             id: resBasPublicIP.id
+//           }
+//           subnet: {
+//             id: resVnet.properties.subnets[3].id
+//           }
+//         }
+//       }
+//     ]
+//   }
+// }
 
 //Firewall + Firewall Policy + any/any Rule, + Firewall Public IP
 resource resAfwPublicIP 'Microsoft.Network/publicIPAddresses@2023-05-01' = {
@@ -187,54 +187,54 @@ resource resAfwPolicyRuleCollectionGroup 'Microsoft.Network/firewallPolicies/rul
     ]
   }
 }
-resource resAfw 'Microsoft.Network/azureFirewalls@2023-05-01' = {
-  name: 'afw-${parSpokeName}-${parLocation}-001'
-  location: parLocation
-  properties: {
-    sku: {
-      name: 'AZFW_VNet'
-      tier: 'Standard'
-    }    
-    firewallPolicy: {
-      id: resAfwPolicy.id
-    }
-    ipConfigurations: [
-      {
-        name: 'ipConfig'
-        properties: {
-          subnet: {
-            id: resVnet.properties.subnets[2].id
-          }
-          publicIPAddress: {
-            id: resAfwPublicIP.id
-          }
-        }
-      }
-    ]
-  }
-}
+// resource resAfw 'Microsoft.Network/azureFirewalls@2023-05-01' = {
+//   name: 'afw-${parSpokeName}-${parLocation}-001'
+//   location: parLocation
+//   properties: {
+//     sku: {
+//       name: 'AZFW_VNet'
+//       tier: 'Standard'
+//     }    
+//     firewallPolicy: {
+//       id: resAfwPolicy.id
+//     }
+//     ipConfigurations: [
+//       {
+//         name: 'ipConfig'
+//         properties: {
+//           subnet: {
+//             id: resVnet.properties.subnets[2].id
+//           }
+//           publicIPAddress: {
+//             id: resAfwPublicIP.id
+//           }
+//         }
+//       }
+//     ]
+//   }
+// }
 
-resource resAfwDs 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: 'ds-${resAfw.name}'
-  scope: resAfw
-  properties: {
-    workspaceId: parLawId
-    logs: [
-      {
-        categoryGroup: 'allLogs'
-        enabled: true
-      }
-    ]
-    metrics: [
-      {
-        category: 'AllMetrics'
-        enabled: true
-      }
-    ]
-  }
-}
+// resource resAfwDs 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+//   name: 'ds-${resAfw.name}'
+//   scope: resAfw
+//   properties: {
+//     workspaceId: parLawId
+//     logs: [
+//       {
+//         categoryGroup: 'allLogs'
+//         enabled: true
+//       }
+//     ]
+//     metrics: [
+//       {
+//         category: 'AllMetrics'
+//         enabled: true
+//       }
+//     ]
+//   }
+// }
 
 output outVnetName string = resVnet.name
 output outVnetId string = resVnet.id
 output outAppGwSubnetId string = resVnet.properties.subnets[1].id
-output outAfwIpAddress string = resAfw.properties.ipConfigurations[0].properties.privateIPAddress
+// output outAfwIpAddress string = resAfw.properties.ipConfigurations[0].properties.privateIPAddress

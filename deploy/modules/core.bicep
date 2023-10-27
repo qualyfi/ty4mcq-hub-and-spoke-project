@@ -29,6 +29,8 @@ param parGuidSuffix string
 param parTenantId string
 param parUserObjectId string
 
+param parLawId string
+
 
 //Core VNet + Web App/SQL Private DNS Zone Link
 resource resVnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
@@ -194,6 +196,35 @@ resource resAdeVmExtension 'Microsoft.Compute/virtualMachines/extensions@2023-07
     }
   }
 }
+resource resAmaVmExtension 'Microsoft.Compute/virtualMachines/extensions@2021-11-01' = {
+  name: 'AzureMonitorWindowsAgent'
+  parent: resVm
+  location: parLocation
+  properties: {
+    publisher: 'Microsoft.Azure.Monitor'
+    type: 'AzureMonitorWindowsAgent'
+    typeHandlerVersion: '1.0'
+    autoUpgradeMinorVersion: true
+    settings: {
+      workspaceId: parLawId
+      azureResourceId: resVm.id
+    }
+  }
+}
+resource resDaVmExtension 'Microsoft.Compute/virtualMachines/extensions@2021-11-01' = {
+  name: 'DependencyAgentWindows'
+  parent: resVm
+  location: parLocation
+  properties: {
+    publisher: 'Microsoft.Azure.Monitoring.DependencyAgent'
+    type: 'DependencyAgentWindows'
+    typeHandlerVersion: '9.10'
+    autoUpgradeMinorVersion: true
+    settings: {
+      enableAMA: true
+    }
+  }
+}
 
 //Disk Encryption Key Vault
 resource resEncryptKv 'Microsoft.KeyVault/vaults@2023-02-01' = {
@@ -278,6 +309,84 @@ resource resKvPeDnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroup
         }
       }
     ]
+  }
+}
+
+resource resDcr 'Microsoft.Insights/dataCollectionRules@2022-06-01' = {
+  name: 'MSVMI-vmDcr'
+  location: parLocation
+  properties: {
+    dataSources: {
+      performanceCounters: [
+        {
+          name: 'VMInsightsPerfCounters'
+          streams: [
+            'Microsoft-InsightsMetrics'
+          ]
+          samplingFrequencyInSeconds: 60
+          counterSpecifiers: [
+            '\\VMInsights\\DetailedMetrics'
+          ]
+        }
+      ]
+      extensions: [
+        {
+          streams: [
+            'Microsoft-ServiceMap'
+          ]
+          extensionName: 'DependencyAgent'
+          extensionSettings: {}
+          name: 'DependencyAgentDataSource'
+        }
+      ]
+    }
+    destinations: {
+      logAnalytics: [
+        {
+          name: 'VMInsightsPerf-Logs-Dest'
+          workspaceResourceId: parLawId
+        }
+      ]
+    }
+    dataFlows: [
+      {
+        streams: [
+          'Microsoft-InsightsMetrics'
+        ]
+        destinations: [
+          'VMInsightsPerf-Logs-Dest'
+        ]
+      }
+      {
+        streams: [
+          'Microsoft-ServiceMap'
+        ]
+        destinations: [
+          'VMInsightsPerf-Logs-Dest'
+        ]
+      }
+    ]
+  }
+}
+resource resVmDcrAssociation 'Microsoft.Insights/dataCollectionRuleAssociations@2022-06-01' = {
+  name: 'vmDcrAssociation'
+  scope: resVm
+  properties: {
+    description: 'Association of data collection rule. Deleting this association will break the data collection for this virtual machine.'
+    dataCollectionRuleId: resDcr.id
+  }
+}
+resource resVmiLawConfig 'Microsoft.OperationsManagement/solutions@2015-11-01-preview' = {
+  name: 'vmiLawConfig'
+  location: parLocation
+  properties: {
+    workspaceResourceId: parLawId
+  }
+  plan: {
+    name: 'vmiLawConfigPlan'
+    product: 'VMInsights'
+    promotionCode: ''
+    publisher: 'Microsoft'
   }
 }
 
