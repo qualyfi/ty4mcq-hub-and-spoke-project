@@ -30,6 +30,7 @@ param parTenantId string
 param parUserObjectId string
 
 param parLawId string
+// param parUtc string
 
 
 //Core VNet + Web App/SQL Private DNS Zone Link
@@ -111,7 +112,7 @@ resource resKvPDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLink
   }
 }
 
-//VM + VM NIC + Antimalware/ADE Extension
+//VM + VM NIC + Antimalware/ADE/AMA/DA Extension
 resource resVm 'Microsoft.Compute/virtualMachines@2023-07-01' = {
   name: 'vm-${parSpokeName}-${parLocation}-001'
   location: parLocation
@@ -312,6 +313,7 @@ resource resKvPeDnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroup
   }
 }
 
+//Data Collection Rule + VM DCR Association
 resource resDcr 'Microsoft.Insights/dataCollectionRules@2022-06-01' = {
   name: 'MSVMI-vmDcr'
   location: parLocation
@@ -376,20 +378,62 @@ resource resVmDcrAssociation 'Microsoft.Insights/dataCollectionRuleAssociations@
     dataCollectionRuleId: resDcr.id
   }
 }
-resource resVmiLawConfig 'Microsoft.OperationsManagement/solutions@2015-11-01-preview' = {
-  name: 'vmiLawConfig'
+
+//Recovery Services Vault + Backup Policy
+resource resRsv 'Microsoft.RecoveryServices/vaults@2023-06-01' = {
+  name: 'rsv-${parSpokeName}-${parLocation}-001'
   location: parLocation
-  properties: {
-    workspaceResourceId: parLawId
+  sku: {
+    name: 'RS0'
+    tier: 'Standard'
   }
-  plan: {
-    name: 'vmiLawConfigPlan'
-    product: 'VMInsights'
-    promotionCode: ''
-    publisher: 'Microsoft'
+  properties: {
+    securitySettings: {
+      immutabilitySettings: {
+        state: 'Disabled'
+      }
+    }
+    publicNetworkAccess: 'Enabled'
+    restoreSettings: {
+      crossSubscriptionRestoreSettings: {
+        crossSubscriptionRestoreState: 'Enabled'
+      }
+    }
   }
 }
+// resource resRsvBackupPolicy 'Microsoft.RecoveryServices/vaults/backupPolicies@2021-03-01' = {
+//   name: 'rsvBackupPolicy'
+//   parent: resRsv
+//   properties: {
+//     backupManagementType: 'AzureIaasVM'
+//     instantRpRetentionRangeInDays: 2
+//     timeZone: 'UTC'
+//     protectedItemsCount: 0
+//     schedulePolicy: {
+//       schedulePolicyType: 'SimpleSchedulePolicy'
+//       scheduleRunFrequency: 'Daily'
+//       scheduleRunTimes: [
+//         parUtc
+//       ]
+//       scheduleWeeklyFrequency: 0
+//     }
+//     retentionPolicy: {
+//       retentionPolicyType: 'LongTermRetentionPolicy'
+//       dailySchedule: {
+//         retentionTimes: [
+//           parUtc
+//         ]
+//         retentionDuration: {
+//           count: 30
+//           durationType: 'Days'
+//         }
+//       }
+//     }
+//   }
+// }
+
 
 
 output outVnetName string = resVnet.name
 output outVnetId string = resVnet.id
+

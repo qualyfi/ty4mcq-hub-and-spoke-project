@@ -12,7 +12,7 @@ param parSqlPDnsZoneName string
 param parSaPDnsZoneName string
 param parKvPDnsZoneName string
 
-param parLawId string
+// param parLawId string
 
 //Hub VNet
 resource resVnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {

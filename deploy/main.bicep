@@ -25,7 +25,7 @@ module modHub 'modules/hub.bicep' = {
     parSaPDnsZoneName: modSaPDnsZone.outputs.outPDnsZoneName
     parKvPDnsZoneName: modKvPDnsZone.outputs.outPDnsZoneName
 
-    parLawId: modLaw.outputs.outLawId
+    // parLawId: modLaw.outputs.outLawId
   }
 }
 
@@ -64,6 +64,7 @@ module modCore 'modules/core.bicep' = {
     parUserObjectId: parUserObjectId
 
     parLawId: modLaw.outputs.outLawId
+    // parUtc: parUtc
   }
 }
 
