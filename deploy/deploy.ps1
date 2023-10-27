@@ -14,8 +14,9 @@ $vmAdminPassword = ConvertTo-SecureString -String $randPass -AsPlainText -Force
 $sqlAdminUsername = ConvertTo-SecureString -String $randUser -AsPlainText -Force
 $sqlAdminPassword = ConvertTo-SecureString -String $randPass -AsPlainText -Force
 
+$kvTags = @{"Dept"="coreServices"; "Owner"="coreServicesOwner"}
 
-New-AzKeyVault -Name $keyVaultName -ResourceGroupName $resourceGroupName -Location $resourceGroupLocation -EnabledForTemplateDeployment
+New-AzKeyVault -Name $keyVaultName -ResourceGroupName $resourceGroupName -Location $resourceGroupLocation -EnabledForTemplateDeployment -Tag $kvTags
 Set-AzKeyVaultSecret -VaultName $keyVaultName -Name 'vmAdminUsername' -SecretValue $vmAdminUsername
 Set-AzKeyVaultSecret -VaultName $keyVaultName -Name 'vmAdminPassword' -SecretValue $vmAdminPassword
 Set-AzKeyVaultSecret -VaultName $keyVaultName -Name 'sqlAdminUsername' -SecretValue $sqlAdminUsername
